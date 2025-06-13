@@ -1,0 +1,34 @@
+{
+  "id": "TICKET-20250607-185814",
+  "title": "Solicitud de soporte - Herbert Mayorga Mansilla",
+  "subject": "Solicitud de soporte - Herbert Mayorga Mansilla",
+  "description": "asdasd",
+  "status": "open",
+  "priority": "",
+  "createdBy": "",
+  "createdAt": "2025-06-07T18:58:14.931992388Z",
+  "updatedAt": "2025-06-07T18:58:14.931992388Z",
+  "messages": [
+    {
+      "id": "MSG-1749322694931996872",
+      "content": "asdasd",
+      "isClient": true,
+      "createdAt": "2025-06-07T18:58:14.931992388Z",
+      "userName": "Herbert Mayorga Mansilla",
+      "userEmail": "test@test.com"
+    }
+  ],
+  "userEmail": "test@test.com",
+  "userName": "Herbert Mayorga Mansilla",
+  "clientName": "Herbert Mayorga Mansilla",
+  "clientEmail": "test@test.com",
+  "widgetId": "",
+  "department": "",
+  "metadata": {
+    "url": "http://localhost:8091/",
+    "referrer": "",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+    "screenSize": "2133x1015",
+    "externalId": ""
+  }
+}

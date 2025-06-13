@@ -1,0 +1,34 @@
+{
+  "id": "TICKET-20250611-211102",
+  "title": "Solicitud de soporte - Ben10",
+  "subject": "Solicitud de soporte - Ben10",
+  "description": "test",
+  "status": "open",
+  "priority": "MEDIUM",
+  "createdBy": "",
+  "createdAt": "2025-06-11T21:11:02.817850189Z",
+  "updatedAt": "2025-06-11T21:11:02.817850189Z",
+  "messages": [
+    {
+      "id": "MSG-1749676262817854651",
+      "content": "test",
+      "isClient": true,
+      "createdAt": "2025-06-11T21:11:02.817850189Z",
+      "userName": "Ben10",
+      "userEmail": "ben@gmail.com"
+    }
+  ],
+  "userEmail": "ben@gmail.com",
+  "userName": "Ben10",
+  "clientName": "Ben10",
+  "clientEmail": "ben@gmail.com",
+  "widgetId": "demo-widget",
+  "department": "Soporte",
+  "metadata": {
+    "url": "http://localhost:4321/",
+    "referrer": "",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64; rv:139.0) Gecko/20100101 Firefox/139.0",
+    "screenSize": "2400x1140",
+    "externalId": ""
+  }
+}

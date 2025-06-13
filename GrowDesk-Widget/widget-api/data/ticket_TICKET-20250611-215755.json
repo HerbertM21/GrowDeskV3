@@ -1,0 +1,98 @@
+{
+  "id": "TICKET-20250611-215755",
+  "title": "Solicitud de soporte - PyGeo",
+  "subject": "Solicitud de soporte - PyGeo",
+  "description": "test",
+  "status": "open",
+  "priority": "medium",
+  "createdBy": "",
+  "createdAt": "2025-06-11T21:57:55.298849336Z",
+  "updatedAt": "2025-06-11T22:16:47Z",
+  "messages": [
+    {
+      "id": "MSG-1749679075298857386",
+      "content": "test",
+      "isClient": true,
+      "createdAt": "2025-06-11T21:57:55.298849336Z",
+      "userName": "PyGeo",
+      "userEmail": "test@test.com"
+    },
+    {
+      "id": "MSG-1749679094070351469",
+      "content": "a2",
+      "isClient": true,
+      "createdAt": "2025-06-11T21:58:14.070356887Z",
+      "userName": "PyGeo",
+      "userEmail": "test@test.com"
+    },
+    {
+      "id": "MSG-1749679094071133057",
+      "content": "a2",
+      "isClient": true,
+      "createdAt": "2025-06-11T21:58:14Z",
+      "userName": "PyGeo",
+      "userEmail": "test@test.com"
+    },
+    {
+      "id": "MSG-1749679094071175004",
+      "content": "a2",
+      "isClient": true,
+      "createdAt": "2025-06-11T21:58:14Z",
+      "userName": "PyGeo",
+      "userEmail": "test@test.com"
+    },
+    {
+      "id": "MSG-1749679357798969700",
+      "content": "Mensaje de prueba desde el panel de administración",
+      "isClient": false,
+      "createdAt": "2025-06-11T22:02:37Z",
+      "userName": "Agente Test",
+      "userEmail": "agente@test.com"
+    },
+    {
+      "id": "MSG-1749679634406089826",
+      "content": "Segundo mensaje de prueba - sincronización WebSocket",
+      "isClient": false,
+      "createdAt": "2025-06-11T22:07:14Z",
+      "userName": "",
+      "userEmail": ""
+    },
+    {
+      "id": "MSG-1749679768809794957",
+      "content": "Tercer mensaje de prueba - verificando logs WebSocket",
+      "isClient": false,
+      "createdAt": "2025-06-11T22:09:28Z",
+      "userName": "",
+      "userEmail": ""
+    },
+    {
+      "id": "MSG-1749679874819961804",
+      "content": "Cuarto mensaje - verificando conexiones WebSocket",
+      "isClient": false,
+      "createdAt": "2025-06-11T22:11:14Z",
+      "userName": "",
+      "userEmail": ""
+    },
+    {
+      "id": "MSG-1749680207165901086",
+      "content": "Mensaje de prueba después de arreglar nginx",
+      "isClient": false,
+      "createdAt": "2025-06-11T22:16:47Z",
+      "userName": "",
+      "userEmail": ""
+    }
+  ],
+  "userEmail": "test@test.com",
+  "userName": "PyGeo",
+  "clientName": "PyGeo",
+  "clientEmail": "test@test.com",
+  "widgetId": "demo-widget",
+  "department": "Soporte",
+  "metadata": {
+    "url": "http://localhost:4321/",
+    "referrer": "",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+    "screenSize": "1907x868",
+    "externalId": ""
+  }
+}

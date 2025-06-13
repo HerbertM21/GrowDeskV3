@@ -1,0 +1,50 @@
+{
+  "id": "TICKET-20250607-184709",
+  "title": "Solicitud de soporte - Almendra Solis",
+  "subject": "Solicitud de soporte - Almendra Solis",
+  "description": "asdsad",
+  "status": "open",
+  "priority": "",
+  "createdBy": "",
+  "createdAt": "2025-06-07T18:47:09.756277993Z",
+  "updatedAt": "2025-06-07T18:47:28.783207525Z",
+  "messages": [
+    {
+      "id": "MSG-1749322029756283769",
+      "content": "asdsad",
+      "isClient": true,
+      "createdAt": "2025-06-07T18:47:09.756277993Z",
+      "userName": "Almendra Solis",
+      "userEmail": "herbert.mayorga.jbs@gmail.com"
+    },
+    {
+      "id": "MSG-1749322043367581974",
+      "content": "awe",
+      "isClient": true,
+      "createdAt": "2025-06-07T18:47:23.36759089Z",
+      "userName": "Almendra Solis",
+      "userEmail": "herbert.mayorga.jbs@gmail.com"
+    },
+    {
+      "id": "MSG-1749322048783201173",
+      "content": "asdasdasdsaasd",
+      "isClient": true,
+      "createdAt": "2025-06-07T18:47:28.783207074Z",
+      "userName": "Almendra Solis",
+      "userEmail": "herbert.mayorga.jbs@gmail.com"
+    }
+  ],
+  "userEmail": "herbert.mayorga.jbs@gmail.com",
+  "userName": "Almendra Solis",
+  "clientName": "Almendra Solis",
+  "clientEmail": "herbert.mayorga.jbs@gmail.com",
+  "widgetId": "",
+  "department": "",
+  "metadata": {
+    "url": "http://localhost:8091/",
+    "referrer": "",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+    "screenSize": "2133x1015",
+    "externalId": ""
+  }
+}

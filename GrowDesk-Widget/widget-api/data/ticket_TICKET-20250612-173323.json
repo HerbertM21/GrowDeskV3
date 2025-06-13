@@ -1,0 +1,42 @@
+{
+  "id": "TICKET-20250612-173323",
+  "title": "Solicitud de soporte - Cliente Prueba WebSocket",
+  "subject": "Solicitud de soporte - Cliente Prueba WebSocket",
+  "description": "Mensaje de prueba para verificar la conexión WebSocket",
+  "status": "open",
+  "priority": "medium",
+  "createdBy": "",
+  "createdAt": "2025-06-12T17:33:23.859384566Z",
+  "updatedAt": "2025-06-12T17:33:23Z",
+  "messages": [
+    {
+      "id": "MSG-1749749603859392141",
+      "content": "Mensaje de prueba para verificar la conexión WebSocket",
+      "isClient": true,
+      "createdAt": "2025-06-12T17:33:23.859384566Z",
+      "userName": "Cliente Prueba WebSocket",
+      "userEmail": "prueba@websocket.com"
+    },
+    {
+      "id": "test-msg-websocket-2",
+      "content": "Mensaje de prueba WebSocket - Sistema funcionando",
+      "isClient": false,
+      "createdAt": "2025-06-12T17:33:23Z",
+      "userName": "Agente de Prueba",
+      "userEmail": "agente@growdesk.com"
+    }
+  ],
+  "userEmail": "prueba@websocket.com",
+  "userName": "Cliente Prueba WebSocket",
+  "clientName": "Cliente Prueba WebSocket",
+  "clientEmail": "prueba@websocket.com",
+  "widgetId": "",
+  "department": "",
+  "metadata": {
+    "url": "http://localhost:4321",
+    "referrer": "",
+    "userAgent": "Test",
+    "screenSize": "",
+    "externalId": ""
+  }
+}

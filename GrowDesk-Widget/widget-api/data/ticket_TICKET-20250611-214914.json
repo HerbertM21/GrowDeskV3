@@ -1,0 +1,58 @@
+{
+  "id": "TICKET-20250611-214914",
+  "title": "Solicitud de soporte - Juan2",
+  "subject": "Solicitud de soporte - Juan2",
+  "description": "test2",
+  "status": "open",
+  "priority": "medium",
+  "createdBy": "",
+  "createdAt": "2025-06-11T21:49:14.526360351Z",
+  "updatedAt": "2025-06-11T21:49:45Z",
+  "messages": [
+    {
+      "id": "MSG-1749678554526367315",
+      "content": "test2",
+      "isClient": true,
+      "createdAt": "2025-06-11T21:49:14.526360351Z",
+      "userName": "Juan2",
+      "userEmail": "juan@gmail.com"
+    },
+    {
+      "id": "MSG-1749678585519672152",
+      "content": "2",
+      "isClient": true,
+      "createdAt": "2025-06-11T21:49:45.519679924Z",
+      "userName": "Juan2",
+      "userEmail": "juan@gmail.com"
+    },
+    {
+      "id": "MSG-1749678585520608631",
+      "content": "2",
+      "isClient": true,
+      "createdAt": "2025-06-11T21:49:45Z",
+      "userName": "Juan2",
+      "userEmail": "juan@gmail.com"
+    },
+    {
+      "id": "MSG-1749678585520944293",
+      "content": "2",
+      "isClient": true,
+      "createdAt": "2025-06-11T21:49:45Z",
+      "userName": "Juan2",
+      "userEmail": "juan@gmail.com"
+    }
+  ],
+  "userEmail": "juan@gmail.com",
+  "userName": "Juan2",
+  "clientName": "Juan2",
+  "clientEmail": "juan@gmail.com",
+  "widgetId": "demo-widget",
+  "department": "Soporte",
+  "metadata": {
+    "url": "http://localhost:4321/",
+    "referrer": "",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64; rv:139.0) Gecko/20100101 Firefox/139.0",
+    "screenSize": "2400x828",
+    "externalId": ""
+  }
+}

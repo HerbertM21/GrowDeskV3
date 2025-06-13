@@ -1,0 +1,74 @@
+{
+  "id": "TICKET-20250611-221823",
+  "title": "Solicitud de soporte - Juan Lopez",
+  "subject": "Solicitud de soporte - Juan Lopez",
+  "description": "test",
+  "status": "open",
+  "priority": "medium",
+  "createdBy": "",
+  "createdAt": "2025-06-11T22:18:23.325342971Z",
+  "updatedAt": "2025-06-12T16:30:00Z",
+  "messages": [
+    {
+      "id": "MSG-1749680303325355697",
+      "content": "test",
+      "isClient": true,
+      "createdAt": "2025-06-11T22:18:23.325342971Z",
+      "userName": "Juan Lopez",
+      "userEmail": "admin@example.com"
+    },
+    {
+      "id": "MSG-1749680315721776471",
+      "content": "a",
+      "isClient": true,
+      "createdAt": "2025-06-11T22:18:35.721791074Z",
+      "userName": "Juan Lopez",
+      "userEmail": "admin@example.com"
+    },
+    {
+      "id": "MSG-1749680315723116697",
+      "content": "a",
+      "isClient": true,
+      "createdAt": "2025-06-11T22:18:35Z",
+      "userName": "Juan Lopez",
+      "userEmail": "admin@example.com"
+    },
+    {
+      "id": "MSG-1749680315723172225",
+      "content": "a",
+      "isClient": true,
+      "createdAt": "2025-06-11T22:18:35Z",
+      "userName": "Juan Lopez",
+      "userEmail": "admin@example.com"
+    },
+    {
+      "id": "MSG-1749680476061500329",
+      "content": "Mensaje de prueba para verificar WebSocket",
+      "isClient": false,
+      "createdAt": "2025-06-11T22:21:16Z",
+      "userName": "",
+      "userEmail": ""
+    },
+    {
+      "id": "test-msg-123",
+      "content": "Mensaje de prueba desde backend",
+      "isClient": false,
+      "createdAt": "2025-06-12T16:30:00Z",
+      "userName": "Agente Test",
+      "userEmail": "agent@test.com"
+    }
+  ],
+  "userEmail": "admin@example.com",
+  "userName": "Juan Lopez",
+  "clientName": "Juan Lopez",
+  "clientEmail": "admin@example.com",
+  "widgetId": "demo-widget",
+  "department": "Soporte",
+  "metadata": {
+    "url": "http://localhost:4321/",
+    "referrer": "",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+    "screenSize": "2133x1015",
+    "externalId": ""
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "id": "TICKET-20250607-194314",
+  "title": "Solicitud de soporte - PyGeo333",
+  "subject": "Solicitud de soporte - PyGeo333",
+  "description": "asdasd2w",
+  "status": "open",
+  "priority": "",
+  "createdBy": "",
+  "createdAt": "2025-06-07T19:43:14.912898864Z",
+  "updatedAt": "2025-06-07T19:43:26.885001763Z",
+  "messages": [
+    {
+      "id": "MSG-1749325394912911774",
+      "content": "asdasd2w",
+      "isClient": true,
+      "createdAt": "2025-06-07T19:43:14.912898864Z",
+      "userName": "PyGeo333",
+      "userEmail": "herbert.mayorga.jbs@gmail.com"
+    },
+    {
+      "id": "MSG-1749325406884994075",
+      "content": "asdasd",
+      "isClient": true,
+      "createdAt": "2025-06-07T19:43:26.88500062Z",
+      "userName": "PyGeo333",
+      "userEmail": "herbert.mayorga.jbs@gmail.com"
+    }
+  ],
+  "userEmail": "herbert.mayorga.jbs@gmail.com",
+  "userName": "PyGeo333",
+  "clientName": "PyGeo333",
+  "clientEmail": "herbert.mayorga.jbs@gmail.com",
+  "widgetId": "",
+  "department": "",
+  "metadata": {
+    "url": "http://localhost:8091/",
+    "referrer": "",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+    "screenSize": "2133x1015",
+    "externalId": ""
+  }
+}

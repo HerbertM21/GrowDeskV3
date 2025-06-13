@@ -1,0 +1,138 @@
+{
+  "id": "TICKET-20250612-173418",
+  "title": "Ticket desde backend",
+  "subject": "",
+  "description": "Este ticket fue creado automáticamente al recibir una notificación del backend.",
+  "status": "open",
+  "priority": "",
+  "createdBy": "",
+  "createdAt": "2025-06-12T17:46:10Z",
+  "updatedAt": "2025-06-12T18:02:07Z",
+  "messages": [
+    {
+      "id": "MSG-1749750370821423342",
+      "content": "🔍 MENSAJE DE PRUEBA - Verificando duplicación",
+      "isClient": true,
+      "createdAt": "2025-06-12T17:46:10Z",
+      "userName": "Ruth",
+      "userEmail": "test@test.com"
+    },
+    {
+      "id": "MSG-1749750484072633429",
+      "content": "a4",
+      "isClient": true,
+      "createdAt": "2025-06-12T17:48:04.072732989Z",
+      "userName": "Ruth",
+      "userEmail": "test@test.com"
+    },
+    {
+      "id": "MSG-1749750484075622882",
+      "content": "a4",
+      "isClient": true,
+      "createdAt": "2025-06-12T17:48:04Z",
+      "userName": "Ruth",
+      "userEmail": "test@test.com"
+    },
+    {
+      "id": "MSG-20250612174804.079",
+      "content": "a4",
+      "isClient": true,
+      "createdAt": "2025-06-12T17:48:04Z",
+      "userName": "Ruth",
+      "userEmail": ""
+    },
+    {
+      "id": "MSG-1749751179871384097",
+      "content": "✅ PRUEBA FINAL DEFINITIVA - Sin duplicación",
+      "isClient": true,
+      "createdAt": "2025-06-12T17:59:39.871390951Z",
+      "userName": "Ruth",
+      "userEmail": "test@test.com"
+    },
+    {
+      "id": "MSG-1749751179875608404",
+      "content": "✅ PRUEBA FINAL DEFINITIVA - Sin duplicación",
+      "isClient": true,
+      "createdAt": "2025-06-12T17:59:39Z",
+      "userName": "Ruth",
+      "userEmail": "test@test.com"
+    },
+    {
+      "id": "MSG-20250612175939.879",
+      "content": "✅ PRUEBA FINAL DEFINITIVA - Sin duplicación",
+      "isClient": true,
+      "createdAt": "2025-06-12T17:59:39Z",
+      "userName": "Ruth",
+      "userEmail": ""
+    },
+    {
+      "id": "MSG-1749751289132049794",
+      "content": "✅ PRUEBA FINAL DESPUÉS DEL REBUILD",
+      "isClient": true,
+      "createdAt": "2025-06-12T18:01:29.132055711Z",
+      "userName": "Ruth",
+      "userEmail": "test@test.com"
+    },
+    {
+      "id": "MSG-1749751289173828960",
+      "content": "✅ PRUEBA FINAL DESPUÉS DEL REBUILD",
+      "isClient": true,
+      "createdAt": "2025-06-12T18:01:29Z",
+      "userName": "Ruth",
+      "userEmail": "test@test.com"
+    },
+    {
+      "id": "MSG-20250612180129.195",
+      "content": "✅ PRUEBA FINAL DESPUÉS DEL REBUILD",
+      "isClient": true,
+      "createdAt": "2025-06-12T18:01:29Z",
+      "userName": "Ruth",
+      "userEmail": ""
+    },
+    {
+      "id": "MSG-1749751319369039800",
+      "content": "a er",
+      "isClient": true,
+      "createdAt": "2025-06-12T18:01:59.369053985Z",
+      "userName": "Ruth",
+      "userEmail": "test@test.com"
+    },
+    {
+      "id": "MSG-1749751319369651420",
+      "content": "a er",
+      "isClient": true,
+      "createdAt": "2025-06-12T18:01:59Z",
+      "userName": "Ruth",
+      "userEmail": "test@test.com"
+    },
+    {
+      "id": "MSG-20250612180159.372",
+      "content": "a er",
+      "isClient": true,
+      "createdAt": "2025-06-12T18:01:59Z",
+      "userName": "Ruth",
+      "userEmail": ""
+    },
+    {
+      "id": "MSG-20250612180207.599",
+      "content": "ya",
+      "isClient": false,
+      "createdAt": "2025-06-12T18:02:07Z",
+      "userName": "Agente",
+      "userEmail": ""
+    }
+  ],
+  "userEmail": "test@test.com",
+  "userName": "Ruth",
+  "clientName": "",
+  "clientEmail": "",
+  "widgetId": "",
+  "department": "",
+  "metadata": {
+    "url": "",
+    "referrer": "",
+    "userAgent": "",
+    "screenSize": "",
+    "externalId": ""
+  }
+}

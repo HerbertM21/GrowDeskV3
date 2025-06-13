@@ -1,0 +1,58 @@
+{
+  "id": "TICKET-20250611-202350",
+  "title": "Solicitud de soporte - loli",
+  "subject": "Solicitud de soporte - loli",
+  "description": "test1",
+  "status": "open",
+  "priority": "",
+  "createdBy": "",
+  "createdAt": "2025-06-11T20:23:50.778798388Z",
+  "updatedAt": "2025-06-11T20:24:04Z",
+  "messages": [
+    {
+      "id": "MSG-1749673430778828298",
+      "content": "test1",
+      "isClient": true,
+      "createdAt": "2025-06-11T20:23:50.778798388Z",
+      "userName": "loli",
+      "userEmail": "herbert@gmail.com"
+    },
+    {
+      "id": "MSG-1749673444051065663",
+      "content": "asda2",
+      "isClient": true,
+      "createdAt": "2025-06-11T20:24:04.051071538Z",
+      "userName": "loli",
+      "userEmail": "herbert@gmail.com"
+    },
+    {
+      "id": "MSG-1749673444052865048",
+      "content": "asda2",
+      "isClient": true,
+      "createdAt": "2025-06-11T20:24:04Z",
+      "userName": "loli",
+      "userEmail": "herbert@gmail.com"
+    },
+    {
+      "id": "MSG-1749673444055298766",
+      "content": "asda2",
+      "isClient": true,
+      "createdAt": "2025-06-11T20:24:04Z",
+      "userName": "loli",
+      "userEmail": "herbert@gmail.com"
+    }
+  ],
+  "userEmail": "herbert@gmail.com",
+  "userName": "loli",
+  "clientName": "loli",
+  "clientEmail": "herbert@gmail.com",
+  "widgetId": "",
+  "department": "",
+  "metadata": {
+    "url": "http://localhost:4321/",
+    "referrer": "",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64; rv:139.0) Gecko/20100101 Firefox/139.0",
+    "screenSize": "1920x912",
+    "externalId": ""
+  }
+}

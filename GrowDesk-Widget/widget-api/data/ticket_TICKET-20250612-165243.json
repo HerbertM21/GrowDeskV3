@@ -1,0 +1,74 @@
+{
+  "id": "TICKET-20250612-165243",
+  "title": "Solicitud de soporte - Mario",
+  "subject": "Solicitud de soporte - Mario",
+  "description": "test2",
+  "status": "open",
+  "priority": "medium",
+  "createdBy": "",
+  "createdAt": "2025-06-12T16:52:43.644717426Z",
+  "updatedAt": "2025-06-12T16:56:00Z",
+  "messages": [
+    {
+      "id": "MSG-1749747163644723644",
+      "content": "test2",
+      "isClient": true,
+      "createdAt": "2025-06-12T16:52:43.644717426Z",
+      "userName": "Mario",
+      "userEmail": "admin@example.com"
+    },
+    {
+      "id": "MSG-1749747166074747334",
+      "content": "asd",
+      "isClient": true,
+      "createdAt": "2025-06-12T16:52:46.074753448Z",
+      "userName": "Mario",
+      "userEmail": "admin@example.com"
+    },
+    {
+      "id": "MSG-1749747166075450717",
+      "content": "asd",
+      "isClient": true,
+      "createdAt": "2025-06-12T16:52:46Z",
+      "userName": "Mario",
+      "userEmail": "admin@example.com"
+    },
+    {
+      "id": "MSG-1749747166075475556",
+      "content": "asd",
+      "isClient": true,
+      "createdAt": "2025-06-12T16:52:46Z",
+      "userName": "Mario",
+      "userEmail": "admin@example.com"
+    },
+    {
+      "id": "MSG-1749747176296314770",
+      "content": "2",
+      "isClient": false,
+      "createdAt": "2025-06-12T16:52:56Z",
+      "userName": "Agente",
+      "userEmail": ""
+    },
+    {
+      "id": "test-msg-websocket",
+      "content": "Mensaje de prueba WebSocket desde backend",
+      "isClient": false,
+      "createdAt": "2025-06-12T16:56:00Z",
+      "userName": "Agente WebSocket",
+      "userEmail": "agent@websocket.com"
+    }
+  ],
+  "userEmail": "admin@example.com",
+  "userName": "Mario",
+  "clientName": "Mario",
+  "clientEmail": "admin@example.com",
+  "widgetId": "demo-widget",
+  "department": "Soporte",
+  "metadata": {
+    "url": "http://localhost:4321/",
+    "referrer": "",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+    "screenSize": "2133x1015",
+    "externalId": ""
+  }
+}

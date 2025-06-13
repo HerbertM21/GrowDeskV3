@@ -1,0 +1,90 @@
+{
+  "id": "TICKET-20250612-164204",
+  "title": "Solicitud de soporte - Laura Llabaca",
+  "subject": "Solicitud de soporte - Laura Llabaca",
+  "description": "test",
+  "status": "open",
+  "priority": "medium",
+  "createdBy": "",
+  "createdAt": "2025-06-12T16:42:04.721404963Z",
+  "updatedAt": "2025-06-12T16:49:24Z",
+  "messages": [
+    {
+      "id": "MSG-1749746524721411491",
+      "content": "test",
+      "isClient": true,
+      "createdAt": "2025-06-12T16:42:04.721404963Z",
+      "userName": "Laura Llabaca",
+      "userEmail": "herbertow@gmail.com"
+    },
+    {
+      "id": "MSG-1749746538446779319",
+      "content": "a1",
+      "isClient": false,
+      "createdAt": "2025-06-12T16:42:18Z",
+      "userName": "Agente",
+      "userEmail": ""
+    },
+    {
+      "id": "MSG-1749746542516958601",
+      "content": "a2",
+      "isClient": true,
+      "createdAt": "2025-06-12T16:42:22.517026618Z",
+      "userName": "Laura Llabaca",
+      "userEmail": "herbertow@gmail.com"
+    },
+    {
+      "id": "MSG-1749746542518409470",
+      "content": "a2",
+      "isClient": true,
+      "createdAt": "2025-06-12T16:42:22Z",
+      "userName": "Laura Llabaca",
+      "userEmail": "herbertow@gmail.com"
+    },
+    {
+      "id": "MSG-1749746542518480053",
+      "content": "a2",
+      "isClient": true,
+      "createdAt": "2025-06-12T16:42:22Z",
+      "userName": "Laura Llabaca",
+      "userEmail": "herbertow@gmail.com"
+    },
+    {
+      "id": "MSG-1749746964265155732",
+      "content": "asdasd",
+      "isClient": true,
+      "createdAt": "2025-06-12T16:49:24.265162052Z",
+      "userName": "Laura Llabaca",
+      "userEmail": "herbertow@gmail.com"
+    },
+    {
+      "id": "MSG-1749746964265705836",
+      "content": "asdasd",
+      "isClient": true,
+      "createdAt": "2025-06-12T16:49:24Z",
+      "userName": "Laura Llabaca",
+      "userEmail": "herbertow@gmail.com"
+    },
+    {
+      "id": "MSG-1749746964265763404",
+      "content": "asdasd",
+      "isClient": true,
+      "createdAt": "2025-06-12T16:49:24Z",
+      "userName": "Laura Llabaca",
+      "userEmail": "herbertow@gmail.com"
+    }
+  ],
+  "userEmail": "herbertow@gmail.com",
+  "userName": "Laura Llabaca",
+  "clientName": "Laura Llabaca",
+  "clientEmail": "herbertow@gmail.com",
+  "widgetId": "demo-widget",
+  "department": "Soporte",
+  "metadata": {
+    "url": "http://localhost:4321/",
+    "referrer": "",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+    "screenSize": "2133x1015",
+    "externalId": ""
+  }
+}

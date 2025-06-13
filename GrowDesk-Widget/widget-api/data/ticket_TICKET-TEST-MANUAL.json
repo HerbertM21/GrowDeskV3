@@ -1,0 +1,34 @@
+{
+  "id": "TICKET-TEST-MANUAL",
+  "title": "Ticket desde backend",
+  "subject": "",
+  "description": "Este ticket fue creado automáticamente al recibir una notificación del backend.",
+  "status": "open",
+  "priority": "",
+  "createdBy": "",
+  "createdAt": "2025-06-07T19:15:00Z",
+  "updatedAt": "2025-06-07T19:15:00Z",
+  "messages": [
+    {
+      "id": "test-msg-manual-fix",
+      "content": "Mensaje de prueba después de las correcciones",
+      "isClient": false,
+      "createdAt": "2025-06-07T19:15:00Z",
+      "userName": "Agente Test",
+      "userEmail": "agente@test.com"
+    }
+  ],
+  "userEmail": "agente@test.com",
+  "userName": "Agente Test",
+  "clientName": "",
+  "clientEmail": "",
+  "widgetId": "",
+  "department": "",
+  "metadata": {
+    "url": "",
+    "referrer": "",
+    "userAgent": "",
+    "screenSize": "",
+    "externalId": ""
+  }
+}

@@ -1,0 +1,250 @@
+{
+  "id": "TICKET-20250611-182928",
+  "title": "Solicitud de soporte - Herbert",
+  "subject": "Solicitud de soporte - Herbert",
+  "description": "asdasd",
+  "status": "open",
+  "priority": "",
+  "createdBy": "",
+  "createdAt": "2025-06-11T18:29:28.473144399Z",
+  "updatedAt": "2025-06-11T20:29:19Z",
+  "messages": [
+    {
+      "id": "MSG-1749666568473153086",
+      "content": "asdasd",
+      "isClient": true,
+      "createdAt": "2025-06-11T18:29:28.473144399Z",
+      "userName": "Herbert",
+      "userEmail": "admin@example.com"
+    },
+    {
+      "id": "MSG-1749666587251692846",
+      "content": "asdasdw",
+      "isClient": true,
+      "createdAt": "2025-06-11T18:29:47.251698931Z",
+      "userName": "Herbert",
+      "userEmail": "admin@example.com"
+    },
+    {
+      "id": "MSG-1749666587252416623",
+      "content": "asdasdw",
+      "isClient": true,
+      "createdAt": "2025-06-11T18:29:47Z",
+      "userName": "Herbert",
+      "userEmail": "admin@example.com"
+    },
+    {
+      "id": "MSG-1749666587252978386",
+      "content": "asdasdw",
+      "isClient": true,
+      "createdAt": "2025-06-11T18:29:47Z",
+      "userName": "Herbert",
+      "userEmail": "admin@example.com"
+    },
+    {
+      "id": "MSG-1749666709278237883",
+      "content": "MENSAJE DE SOPORTE DE PRUEBA - NO SOY CLIENTE",
+      "isClient": false,
+      "createdAt": "2025-06-11T18:31:49Z",
+      "userName": "Agente Soporte TEST",
+      "userEmail": "soporte@test.com"
+    },
+    {
+      "id": "MSG-1749666789115036919",
+      "content": "✅ SEGUNDO MENSAJE DE PRUEBA DESPUÉS DEL REINICIO",
+      "isClient": false,
+      "createdAt": "2025-06-11T18:33:09Z",
+      "userName": "Agente Soporte TEST 2",
+      "userEmail": "soporte2@test.com"
+    },
+    {
+      "id": "MSG-1749666830099064541",
+      "content": "🎉 MENSAJE FINAL DE PRUEBA - Esto debe aparecer en el widget como mensaje de SOPORTE",
+      "isClient": false,
+      "createdAt": "2025-06-11T18:33:50Z",
+      "userName": "Agente Prueba Final",
+      "userEmail": "prueba@growdesk.com"
+    },
+    {
+      "id": "MSG-1749666884424309136",
+      "content": "a",
+      "isClient": true,
+      "createdAt": "2025-06-11T18:34:44.42438446Z",
+      "userName": "Herbert",
+      "userEmail": "admin@example.com"
+    },
+    {
+      "id": "MSG-1749666884426103180",
+      "content": "a",
+      "isClient": true,
+      "createdAt": "2025-06-11T18:34:44Z",
+      "userName": "Herbert",
+      "userEmail": "admin@example.com"
+    },
+    {
+      "id": "MSG-1749666884428023516",
+      "content": "a",
+      "isClient": true,
+      "createdAt": "2025-06-11T18:34:44Z",
+      "userName": "Herbert",
+      "userEmail": "admin@example.com"
+    },
+    {
+      "id": "MSG-1749666986333920698",
+      "content": "🔍 MENSAJE DE PRUEBA PARA DETECTAR INSTANCIA ACTIVA",
+      "isClient": false,
+      "createdAt": "2025-06-11T18:36:26Z",
+      "userName": "Debug Agent",
+      "userEmail": "debug@test.com"
+    },
+    {
+      "id": "test-notify-external",
+      "content": "Test de notificación externa",
+      "isClient": false,
+      "createdAt": "2025-06-11T19:00:00Z",
+      "userName": "Test Agente Externo",
+      "userEmail": "test@agente.com"
+    },
+    {
+      "id": "MSG-1749667328834574375",
+      "content": "MENSAJE DE PRUEBA DESPUÉS DE LA CORRECCIÓN",
+      "isClient": false,
+      "createdAt": "2025-06-11T18:42:08Z",
+      "userName": "Agente Corrección",
+      "userEmail": "corrección@test.com"
+    },
+    {
+      "id": "MSG-1749667422770453964",
+      "content": "asd2",
+      "isClient": true,
+      "createdAt": "2025-06-11T18:43:42.77046141Z",
+      "userName": "Herbert",
+      "userEmail": "admin@example.com"
+    },
+    {
+      "id": "MSG-1749667422771559487",
+      "content": "asd2",
+      "isClient": true,
+      "createdAt": "2025-06-11T18:43:42Z",
+      "userName": "Herbert",
+      "userEmail": "admin@example.com"
+    },
+    {
+      "id": "MSG-1749667422786447784",
+      "content": "asd2",
+      "isClient": true,
+      "createdAt": "2025-06-11T18:43:42Z",
+      "userName": "Herbert",
+      "userEmail": "admin@example.com"
+    },
+    {
+      "id": "MSG-1749668040525676461",
+      "content": "MENSAJE DE PRUEBA F5 - Este mensaje debe aparecer después de refrescar la página",
+      "isClient": false,
+      "createdAt": "2025-06-11T18:54:00Z",
+      "userName": "Agente F5 Test",
+      "userEmail": "f5test@growdesk.com"
+    },
+    {
+      "id": "MSG-1749668273225409028",
+      "content": "MENSAJE FINAL DE PRUEBA - Este es el último mensaje antes de probar F5",
+      "isClient": false,
+      "createdAt": "2025-06-11T18:57:53Z",
+      "userName": "Agente Final",
+      "userEmail": "final@test.com"
+    },
+    {
+      "id": "MSG-1749668302562612298",
+      "content": "asdaasd",
+      "isClient": true,
+      "createdAt": "2025-06-11T18:58:22.562618636Z",
+      "userName": "Herbert",
+      "userEmail": "admin@example.com"
+    },
+    {
+      "id": "MSG-1749668302563229940",
+      "content": "asdaasd",
+      "isClient": true,
+      "createdAt": "2025-06-11T18:58:22Z",
+      "userName": "Herbert",
+      "userEmail": "admin@example.com"
+    },
+    {
+      "id": "MSG-1749668302563918929",
+      "content": "asdaasd",
+      "isClient": true,
+      "createdAt": "2025-06-11T18:58:22Z",
+      "userName": "Herbert",
+      "userEmail": "admin@example.com"
+    },
+    {
+      "id": "MSG-1749668552477609231",
+      "content": "ASDASD",
+      "isClient": true,
+      "createdAt": "2025-06-11T19:02:32.477615527Z",
+      "userName": "Herbert",
+      "userEmail": "admin@example.com"
+    },
+    {
+      "id": "MSG-1749668552478813599",
+      "content": "ASDASD",
+      "isClient": true,
+      "createdAt": "2025-06-11T19:02:32Z",
+      "userName": "Herbert",
+      "userEmail": "admin@example.com"
+    },
+    {
+      "id": "MSG-1749668552478281959",
+      "content": "ASDASD",
+      "isClient": true,
+      "createdAt": "2025-06-11T19:02:32Z",
+      "userName": "Herbert",
+      "userEmail": "admin@example.com"
+    },
+    {
+      "id": "MSG-1749668554360707675",
+      "content": "222",
+      "isClient": true,
+      "createdAt": "2025-06-11T19:02:34.360713876Z",
+      "userName": "Herbert",
+      "userEmail": "admin@example.com"
+    },
+    {
+      "id": "MSG-1749668554361251205",
+      "content": "222",
+      "isClient": true,
+      "createdAt": "2025-06-11T19:02:34Z",
+      "userName": "Herbert",
+      "userEmail": "admin@example.com"
+    },
+    {
+      "id": "MSG-1749668554362326212",
+      "content": "222",
+      "isClient": true,
+      "createdAt": "2025-06-11T19:02:34Z",
+      "userName": "Herbert",
+      "userEmail": "admin@example.com"
+    },
+    {
+      "id": "MSG-1749673759708146575",
+      "content": "MENSAJE DE PRUEBA FINAL - El historial debe persistir después de F5",
+      "isClient": false,
+      "createdAt": "2025-06-11T20:29:19Z",
+      "userName": "Agente Prueba Final",
+      "userEmail": "prueba@test.com"
+    }
+  ],
+  "userEmail": "admin@example.com",
+  "userName": "Herbert",
+  "clientName": "Herbert",
+  "clientEmail": "admin@example.com",
+  "widgetId": "",
+  "department": "",
+  "metadata": {
+    "url": "http://localhost:4321/",
+    "referrer": "",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+    "screenSize": "2133x1015",
+    "externalId": ""
+  }
+}

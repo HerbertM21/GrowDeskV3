@@ -1,0 +1,42 @@
+{
+  "id": "TICKET-20250607-190507",
+  "title": "Solicitud de soporte - Andrés Mayorga",
+  "subject": "Solicitud de soporte - Andrés Mayorga",
+  "description": "Hola",
+  "status": "open",
+  "priority": "",
+  "createdBy": "",
+  "createdAt": "2025-06-07T19:05:07.17005235Z",
+  "updatedAt": "2025-06-07T19:05:21.236539141Z",
+  "messages": [
+    {
+      "id": "MSG-1749323107170056880",
+      "content": "Hola",
+      "isClient": true,
+      "createdAt": "2025-06-07T19:05:07.17005235Z",
+      "userName": "Andrés Mayorga",
+      "userEmail": "herbert.mayorga@alu.ucm.cl"
+    },
+    {
+      "id": "MSG-1749323121236520421",
+      "content": "jeje",
+      "isClient": true,
+      "createdAt": "2025-06-07T19:05:21.236536586Z",
+      "userName": "Andr\ufffds Mayorga",
+      "userEmail": "herbert.mayorga@alu.ucm.cl"
+    }
+  ],
+  "userEmail": "herbert.mayorga@alu.ucm.cl",
+  "userName": "Andrés Mayorga",
+  "clientName": "Andrés Mayorga",
+  "clientEmail": "herbert.mayorga@alu.ucm.cl",
+  "widgetId": "",
+  "department": "",
+  "metadata": {
+    "url": "http://localhost:8091/",
+    "referrer": "",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+    "screenSize": "2133x1015",
+    "externalId": ""
+  }
+}

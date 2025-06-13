@@ -1,0 +1,42 @@
+{
+  "id": "TICKET-20250607-183617",
+  "title": "Solicitud de soporte - Martina Cristi3",
+  "subject": "Solicitud de soporte - Martina Cristi3",
+  "description": "asdsad",
+  "status": "open",
+  "priority": "",
+  "createdBy": "",
+  "createdAt": "2025-06-07T18:36:17.243691398Z",
+  "updatedAt": "2025-06-07T18:36:44.342922602Z",
+  "messages": [
+    {
+      "id": "MSG-1749321377243694766",
+      "content": "asdsad",
+      "isClient": true,
+      "createdAt": "2025-06-07T18:36:17.243691398Z",
+      "userName": "Martina Cristi3",
+      "userEmail": "herbert.mayorga.jbs@gmail.com"
+    },
+    {
+      "id": "MSG-1749321404342905752",
+      "content": "asdasdasd",
+      "isClient": true,
+      "createdAt": "2025-06-07T18:36:44.342915685Z",
+      "userName": "Martina Cristi3",
+      "userEmail": "herbert.mayorga.jbs@gmail.com"
+    }
+  ],
+  "userEmail": "herbert.mayorga.jbs@gmail.com",
+  "userName": "Martina Cristi3",
+  "clientName": "Martina Cristi3",
+  "clientEmail": "herbert.mayorga.jbs@gmail.com",
+  "widgetId": "",
+  "department": "",
+  "metadata": {
+    "url": "http://localhost:8091/",
+    "referrer": "",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+    "screenSize": "2133x1015",
+    "externalId": ""
+  }
+}

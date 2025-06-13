@@ -1,0 +1,98 @@
+{
+  "id": "TICKET-20250610-191925",
+  "title": "Solicitud de soporte - Herbert",
+  "subject": "Solicitud de soporte - Herbert",
+  "description": "adasd",
+  "status": "open",
+  "priority": "",
+  "createdBy": "",
+  "createdAt": "2025-06-10T19:19:25.125623326Z",
+  "updatedAt": "2025-06-11T18:28:47Z",
+  "messages": [
+    {
+      "id": "MSG-1749583165125627486",
+      "content": "adasd",
+      "isClient": true,
+      "createdAt": "2025-06-10T19:19:25.125623326Z",
+      "userName": "Herbert",
+      "userEmail": "herbert.mayorga.jbs@gmail.com"
+    },
+    {
+      "id": "MSG-1749583186094611314",
+      "content": "w",
+      "isClient": true,
+      "createdAt": "2025-06-10T19:19:46.094619875Z",
+      "userName": "Herbert",
+      "userEmail": "herbert.mayorga.jbs@gmail.com"
+    },
+    {
+      "id": "MSG-1749583197821261184",
+      "content": "asdasd",
+      "isClient": true,
+      "createdAt": "2025-06-10T19:19:57.821267521Z",
+      "userName": "Herbert",
+      "userEmail": "herbert.mayorga.jbs@gmail.com"
+    },
+    {
+      "id": "MSG-1749583216401337970",
+      "content": "soy el wn del widget",
+      "isClient": true,
+      "createdAt": "2025-06-10T19:20:16.4013491Z",
+      "userName": "Herbert",
+      "userEmail": "herbert.mayorga.jbs@gmail.com"
+    },
+    {
+      "id": "MSG-1749666148919411259",
+      "content": "adsdad",
+      "isClient": true,
+      "createdAt": "2025-06-11T18:22:28.919416767Z",
+      "userName": "Herbert",
+      "userEmail": "herbert.mayorga.jbs@gmail.com"
+    },
+    {
+      "id": "MSG-1749666160237888324",
+      "content": "hola?",
+      "isClient": true,
+      "createdAt": "2025-06-11T18:22:40.23789467Z",
+      "userName": "Herbert",
+      "userEmail": "herbert.mayorga.jbs@gmail.com"
+    },
+    {
+      "id": "test-msg-manual-2",
+      "content": "Mensaje de prueba manual desde soporte",
+      "isClient": false,
+      "createdAt": "2025-06-11T18:30:00Z",
+      "userName": "Agente Test",
+      "userEmail": "agente@test.com"
+    },
+    {
+      "id": "MSG-1749666479606649691",
+      "content": "Hola desde soporte, ¿en qué podemos ayudarte?",
+      "isClient": false,
+      "createdAt": "2025-06-11T18:27:59.606651305Z",
+      "userName": "Agente de Soporte",
+      "userEmail": ""
+    },
+    {
+      "id": "MSG-1749666527459189448",
+      "content": "¡Hola! Soy un agente de soporte desde el panel de administración. Te ayudo con tu consulta.",
+      "isClient": false,
+      "createdAt": "2025-06-11T18:28:47Z",
+      "userName": "Agente Soporte",
+      "userEmail": "soporte@growdesk.com"
+    }
+  ],
+  "userEmail": "herbert.mayorga.jbs@gmail.com",
+  "userName": "Herbert",
+  "clientName": "Herbert",
+  "clientEmail": "herbert.mayorga.jbs@gmail.com",
+  "widgetId": "",
+  "department": "",
+  "metadata": {
+    "url": "http://localhost:4321/",
+    "referrer": "",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+    "screenSize": "2133x1015",
+    "externalId": ""
+  }
+}

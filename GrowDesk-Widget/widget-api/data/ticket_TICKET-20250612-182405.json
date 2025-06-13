@@ -1,0 +1,170 @@
+{
+  "id": "TICKET-20250612-182405",
+  "title": "Solicitud de soporte - 2Martina Cristi",
+  "subject": "Solicitud de soporte - 2Martina Cristi",
+  "description": "asd",
+  "status": "open",
+  "priority": "medium",
+  "createdBy": "",
+  "createdAt": "2025-06-12T18:24:05.474479229Z",
+  "updatedAt": "2025-06-12T18:48:37Z",
+  "messages": [
+    {
+      "id": "MSG-1749752645474484884",
+      "content": "asd",
+      "isClient": true,
+      "createdAt": "2025-06-12T18:24:05.474479229Z",
+      "userName": "2Martina Cristi",
+      "userEmail": "herbert.mayorga.jbs@gmail.com"
+    },
+    {
+      "id": "MSG-1749752763394115134",
+      "content": "a",
+      "isClient": true,
+      "createdAt": "2025-06-12T18:26:03.394225493Z",
+      "userName": "2Martina Cristi",
+      "userEmail": "herbert.mayorga.jbs@gmail.com"
+    },
+    {
+      "id": "MSG-1749752763397965456",
+      "content": "a",
+      "isClient": true,
+      "createdAt": "2025-06-12T18:26:03Z",
+      "userName": "2Martina Cristi",
+      "userEmail": "herbert.mayorga.jbs@gmail.com"
+    },
+    {
+      "id": "MSG-20250612182603.410",
+      "content": "a",
+      "isClient": true,
+      "createdAt": "2025-06-12T18:26:03Z",
+      "userName": "2Martina Cristi",
+      "userEmail": ""
+    },
+    {
+      "id": "MSG-20250612182618.480",
+      "content": "b2",
+      "isClient": false,
+      "createdAt": "2025-06-12T18:26:18Z",
+      "userName": "Agente",
+      "userEmail": ""
+    },
+    {
+      "id": "MSG-1749752785232742325",
+      "content": "a2",
+      "isClient": true,
+      "createdAt": "2025-06-12T18:26:25.232753534Z",
+      "userName": "2Martina Cristi",
+      "userEmail": "herbert.mayorga.jbs@gmail.com"
+    },
+    {
+      "id": "MSG-20250612182625.235",
+      "content": "a2",
+      "isClient": true,
+      "createdAt": "2025-06-12T18:26:25Z",
+      "userName": "2Martina Cristi",
+      "userEmail": ""
+    },
+    {
+      "id": "MSG-1749752785233460399",
+      "content": "a2",
+      "isClient": true,
+      "createdAt": "2025-06-12T18:26:25Z",
+      "userName": "2Martina Cristi",
+      "userEmail": "herbert.mayorga.jbs@gmail.com"
+    },
+    {
+      "id": "MSG-20250612183134.840",
+      "content": "b3",
+      "isClient": false,
+      "createdAt": "2025-06-12T18:31:34Z",
+      "userName": "Agente",
+      "userEmail": ""
+    },
+    {
+      "id": "MSG-1749753100525362415",
+      "content": "a3",
+      "isClient": true,
+      "createdAt": "2025-06-12T18:31:40.525389442Z",
+      "userName": "2Martina Cristi",
+      "userEmail": "herbert.mayorga.jbs@gmail.com"
+    },
+    {
+      "id": "MSG-1749753100527832242",
+      "content": "a3",
+      "isClient": true,
+      "createdAt": "2025-06-12T18:31:40Z",
+      "userName": "2Martina Cristi",
+      "userEmail": "herbert.mayorga.jbs@gmail.com"
+    },
+    {
+      "id": "MSG-1749753695924897428",
+      "content": "ya",
+      "isClient": true,
+      "createdAt": "2025-06-12T18:41:35.92490307Z",
+      "userName": "2Martina Cristi",
+      "userEmail": "herbert.mayorga.jbs@gmail.com"
+    },
+    {
+      "id": "MSG-1749753695925785582",
+      "content": "ya",
+      "isClient": true,
+      "createdAt": "2025-06-12T18:41:35Z",
+      "userName": "2Martina Cristi",
+      "userEmail": "herbert.mayorga.jbs@gmail.com"
+    },
+    {
+      "id": "MSG-20250612184135.935",
+      "content": "ya",
+      "isClient": true,
+      "createdAt": "2025-06-12T18:41:35Z",
+      "userName": "2Martina Cristi",
+      "userEmail": ""
+    },
+    {
+      "id": "MSG-20250612184141.601",
+      "content": "ya2",
+      "isClient": false,
+      "createdAt": "2025-06-12T18:41:41Z",
+      "userName": "Agente",
+      "userEmail": ""
+    },
+    {
+      "id": "MSG-1749754111551567888",
+      "content": "ya1",
+      "isClient": true,
+      "createdAt": "2025-06-12T18:48:31.551575324Z",
+      "userName": "2Martina Cristi",
+      "userEmail": "herbert.mayorga.jbs@gmail.com"
+    },
+    {
+      "id": "MSG-1749754111553368097",
+      "content": "ya1",
+      "isClient": true,
+      "createdAt": "2025-06-12T18:48:31Z",
+      "userName": "2Martina Cristi",
+      "userEmail": "herbert.mayorga.jbs@gmail.com"
+    },
+    {
+      "id": "MSG-20250612184837.123",
+      "content": "ya2",
+      "isClient": false,
+      "createdAt": "2025-06-12T18:48:37Z",
+      "userName": "Agente",
+      "userEmail": ""
+    }
+  ],
+  "userEmail": "herbert.mayorga.jbs@gmail.com",
+  "userName": "2Martina Cristi",
+  "clientName": "2Martina Cristi",
+  "clientEmail": "herbert.mayorga.jbs@gmail.com",
+  "widgetId": "",
+  "department": "",
+  "metadata": {
+    "url": "http://localhost:4321/",
+    "referrer": "",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+    "screenSize": "2133x1015",
+    "externalId": ""
+  }
+}

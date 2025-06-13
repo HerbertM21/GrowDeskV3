@@ -1,0 +1,66 @@
+{
+  "id": "TICKET-20250612-185027",
+  "title": "Solicitud de soporte - Herbert Mayorga",
+  "subject": "Solicitud de soporte - Herbert Mayorga",
+  "description": "Hola, tengo un problema.",
+  "status": "open",
+  "priority": "medium",
+  "createdBy": "",
+  "createdAt": "2025-06-12T18:50:27.268722464Z",
+  "updatedAt": "2025-06-12T22:14:13Z",
+  "messages": [
+    {
+      "id": "MSG-1749754227268728293",
+      "content": "Hola, tengo un problema.",
+      "isClient": true,
+      "createdAt": "2025-06-12T18:50:27.268722464Z",
+      "userName": "Herbert Mayorga",
+      "userEmail": "herbert.mayorga.jbs@gmail.com"
+    },
+    {
+      "id": "MSG-20250612185042.702",
+      "content": "cual?",
+      "isClient": false,
+      "createdAt": "2025-06-12T18:50:42Z",
+      "userName": "Agente",
+      "userEmail": ""
+    },
+    {
+      "id": "MSG-20250612214915.232",
+      "content": "Herbert Usuario ha asignado este ticket a Herbert Usuario.",
+      "isClient": false,
+      "createdAt": "2025-06-12T21:49:15Z",
+      "userName": "Agente",
+      "userEmail": ""
+    },
+    {
+      "id": "MSG-20250612220756.551",
+      "content": "Herbert Usuario ha asignado este ticket a Herbert Usuario.",
+      "isClient": false,
+      "createdAt": "2025-06-12T22:07:56Z",
+      "userName": "Agente",
+      "userEmail": ""
+    },
+    {
+      "id": "MSG-20250612221413.739",
+      "content": "Herbert Usuario ha asignado este ticket a Herbert Usuario.",
+      "isClient": false,
+      "createdAt": "2025-06-12T22:14:13Z",
+      "userName": "Agente",
+      "userEmail": ""
+    }
+  ],
+  "userEmail": "herbert.mayorga.jbs@gmail.com",
+  "userName": "Herbert Mayorga",
+  "clientName": "Herbert Mayorga",
+  "clientEmail": "herbert.mayorga.jbs@gmail.com",
+  "widgetId": "",
+  "department": "",
+  "metadata": {
+    "url": "http://localhost:4321/",
+    "referrer": "",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+    "screenSize": "1907x868",
+    "externalId": ""
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "id": "TICKET-20250603-195701",
+  "title": "Ticket DEBUG",
+  "subject": "Ticket DEBUG",
+  "description": "Mensaje de debug para identificar el problema",
+  "status": "open",
+  "priority": "medium",
+  "createdBy": "",
+  "createdAt": "2025-06-03T19:57:01.098371955Z",
+  "updatedAt": "2025-06-03T19:57:01.098371955Z",
+  "messages": [
+    {
+      "id": "MSG-1748980621098394329",
+      "content": "Mensaje de debug para identificar el problema",
+      "isClient": true,
+      "createdAt": "2025-06-03T19:57:01.098371955Z",
+      "userName": "Usuario DEBUG",
+      "userEmail": "debug@example.com"
+    }
+  ],
+  "userEmail": "debug@example.com",
+  "userName": "Usuario DEBUG",
+  "clientName": "Usuario DEBUG",
+  "clientEmail": "debug@example.com",
+  "widgetId": "",
+  "department": "soporte",
+  "metadata": {
+    "url": "",
+    "referrer": "",
+    "userAgent": "",
+    "screenSize": "",
+    "externalId": ""
+  }
+}

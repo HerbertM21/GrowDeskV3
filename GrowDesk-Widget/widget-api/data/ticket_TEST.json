@@ -1,0 +1,34 @@
+{
+  "id": "TEST",
+  "title": "Ticket desde backend",
+  "subject": "",
+  "description": "Este ticket fue creado automáticamente al recibir una notificación del backend.",
+  "status": "open",
+  "priority": "",
+  "createdBy": "",
+  "createdAt": "2025-06-07T18:51:44.403715587Z",
+  "updatedAt": "2025-06-07T18:51:44.403715587Z",
+  "messages": [
+    {
+      "id": "test-msg",
+      "content": "Test de notificación",
+      "isClient": false,
+      "createdAt": "2025-06-07T18:51:44.403715587Z",
+      "userName": "",
+      "userEmail": ""
+    }
+  ],
+  "userEmail": "",
+  "userName": "",
+  "clientName": "",
+  "clientEmail": "",
+  "widgetId": "",
+  "department": "",
+  "metadata": {
+    "url": "",
+    "referrer": "",
+    "userAgent": "",
+    "screenSize": "",
+    "externalId": ""
+  }
+}

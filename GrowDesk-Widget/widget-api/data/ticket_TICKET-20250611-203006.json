@@ -1,0 +1,82 @@
+{
+  "id": "TICKET-20250611-203006",
+  "title": "Solicitud de soporte - jeje23",
+  "subject": "Solicitud de soporte - jeje23",
+  "description": "test1",
+  "status": "open",
+  "priority": "",
+  "createdBy": "",
+  "createdAt": "2025-06-11T20:30:06.332016888Z",
+  "updatedAt": "2025-06-11T20:33:38Z",
+  "messages": [
+    {
+      "id": "MSG-1749673806332098945",
+      "content": "test1",
+      "isClient": true,
+      "createdAt": "2025-06-11T20:30:06.332016888Z",
+      "userName": "jeje23",
+      "userEmail": "jehe@gmail.com"
+    },
+    {
+      "id": "MSG-1749673810207765714",
+      "content": "asd}",
+      "isClient": true,
+      "createdAt": "2025-06-11T20:30:10.207773827Z",
+      "userName": "jeje23",
+      "userEmail": "jehe@gmail.com"
+    },
+    {
+      "id": "MSG-1749673810210111744",
+      "content": "asd}",
+      "isClient": true,
+      "createdAt": "2025-06-11T20:30:10Z",
+      "userName": "jeje23",
+      "userEmail": "jehe@gmail.com"
+    },
+    {
+      "id": "MSG-1749673810210184748",
+      "content": "asd}",
+      "isClient": true,
+      "createdAt": "2025-06-11T20:30:10Z",
+      "userName": "jeje23",
+      "userEmail": "jehe@gmail.com"
+    },
+    {
+      "id": "MSG-1749674018570503257",
+      "content": "l",
+      "isClient": true,
+      "createdAt": "2025-06-11T20:33:38.57061045Z",
+      "userName": "jeje23",
+      "userEmail": "jehe@gmail.com"
+    },
+    {
+      "id": "MSG-1749674018573527461",
+      "content": "l",
+      "isClient": true,
+      "createdAt": "2025-06-11T20:33:38Z",
+      "userName": "jeje23",
+      "userEmail": "jehe@gmail.com"
+    },
+    {
+      "id": "MSG-1749674018576314866",
+      "content": "l",
+      "isClient": true,
+      "createdAt": "2025-06-11T20:33:38Z",
+      "userName": "jeje23",
+      "userEmail": "jehe@gmail.com"
+    }
+  ],
+  "userEmail": "jehe@gmail.com",
+  "userName": "jeje23",
+  "clientName": "jeje23",
+  "clientEmail": "jehe@gmail.com",
+  "widgetId": "",
+  "department": "",
+  "metadata": {
+    "url": "http://localhost:4321/",
+    "referrer": "",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64; rv:139.0) Gecko/20100101 Firefox/139.0",
+    "screenSize": "1920x912",
+    "externalId": ""
+  }
+}

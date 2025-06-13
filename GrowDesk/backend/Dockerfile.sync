@@ -1,0 +1,32 @@
+FROM golang:1.20-alpine AS builder
+
+WORKDIR /app
+
+RUN apk add --no-cache git
+
+# Copiar archivos del sync-server específicamente
+COPY cmd/sync-server/go.mod ./
+RUN go mod download || true
+
+# Copiar el código fuente del sync-server
+COPY cmd/sync-server/main.go ./
+
+# Compilar la aplicación
+RUN CGO_ENABLED=0 GOOS=linux go build -o sync-server .
+
+FROM alpine:latest
+
+RUN apk --no-cache add tzdata ca-certificates
+
+WORKDIR /app
+
+COPY --from=builder /app/sync-server /app/sync-server
+
+RUN mkdir -p /app/data
+
+EXPOSE 8000
+
+ENV PORT=8000
+ENV DATA_DIR=/app/data
+
+CMD ["/app/sync-server"] 

@@ -1,0 +1,2626 @@
+<template>
+  <div class="admin-section">
+    <div class="kanban-board">
+      <!-- Sección de encabezado con fondo de gradiente y forma ondulada -->
+      <div class="hero-section">
+        <div class="hero-content">
+          <h1 class="hero-title">Mi Panel de Gestión</h1>
+          <p class="hero-subtitle">Organiza y gestiona tus tickets asignados en un tablero Kanban.</p>
+        </div>
+        <div class="wave-shape"></div>
+      </div>
+
+      <div class="content-wrapper">
+        <!-- Título de sección -->
+        <div class="section-header">
+          <h2 class="section-title">
+            <span class="title-icon"><i class="pi pi-th-large"></i></span>
+            Herramienta de Gestión
+          </h2>
+          <p class="section-description">Arrastra los tickets entre columnas para cambiar su estado</p>
+        </div>
+        
+        <!-- Gestión de etiquetas -->
+        <div class="tag-management">
+          <button class="tag-manager-toggle" @click="showTagManager = !showTagManager">
+            <i class="pi pi-minus" :class="showTagManager ? 'pi-minus' : 'pi-tag'"></i>
+            {{ showTagManager ? 'Ocultar etiquetas' : 'Gestionar etiquetas' }}
+          </button>
+          
+          <div v-if="showTagManager" class="tag-manager-panel">
+            <div class="tag-list">
+              <div v-for="tag in ticketStore.tags" :key="tag.id" class="tag-item">
+                <div class="tag-color" :style="{ backgroundColor: tag.color }"></div>
+                <div class="tag-name">{{ tag.name }}</div>
+                <div class="tag-actions">
+                  <button class="tag-action-btn edit" @click="editTag(tag)" title="Editar etiqueta">
+                    <i class="pi pi-pencil"></i>
+                  </button>
+                  <button class="tag-action-btn delete" @click="deleteTag(tag.id)" title="Eliminar etiqueta">
+                    <i class="pi pi-trash"></i>
+                  </button>
+                </div>
+              </div>
+              
+              <div v-if="ticketStore.tags.length === 0" class="empty-tags">
+                No hay etiquetas disponibles. Crea una nueva.
+              </div>
+            </div>
+            
+            <div class="tag-form">
+              <h4 class="form-title">{{ isEditing ? 'Editar etiqueta' : 'Crear nueva etiqueta' }}</h4>
+              <div class="form-group">
+                <label for="tagName">Nombre:</label>
+                <input
+                  type="text"
+                  id="tagName"
+                  v-model="currentTag.name"
+                  placeholder="Nombre de la etiqueta"
+                  class="form-control"
+                />
+              </div>
+              
+              <div class="form-group">
+                <label for="colorHex">Color (Hexadecimal):</label>
+                <div class="color-input-group">
+                  <input
+                    type="text"
+                    id="colorHex"
+                    v-model="currentTag.color"
+                    placeholder="#RRGGBB"
+                    class="form-control color-input"
+                    pattern="^#([A-Fa-f0-9]{6})$"
+                  />
+                  <input
+                    type="color"
+                    v-model="currentTag.color"
+                    class="color-picker"
+                    title="Seleccionar color"
+                  />
+                </div>
+                <div class="color-options">
+                  <div
+                    v-for="color in colorOptions"
+                    :key="color"
+                    class="color-option"
+                    :style="{ backgroundColor: color }"
+                    :class="{ active: currentTag.color === color }"
+                    @click="currentTag.color = color"
+                    :title="color"
+                  ></div>
+                </div>
+              </div>
+              
+              <div class="tag-form-actions">
+                <button class="btn cancel" @click="resetTagForm">Cancelar</button>
+                <button class="btn save" @click="saveTag" :disabled="!currentTag.name">
+                  {{ isEditing ? 'Actualizar' : 'Crear' }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Status messages -->
+        <div v-if="isLoading" class="status-message loading">
+          <i class="pi pi-spin pi-spinner"></i>
+          <p>Cargando tickets...</p>
+        </div>
+        
+        <div v-else-if="hasError" class="status-message error">
+          <i class="pi pi-exclamation-triangle"></i>
+          <p>{{ errorMessage }}</p>
+        </div>
+        
+        <!-- Panel Kanban when data is loaded -->
+        <div v-else class="kanban-container">
+          <div 
+            v-for="(column, index) in columnsData" 
+            :key="column.id" 
+            class="kanban-column"
+            :class="column.id"
+            draggable="true"
+            @dragstart="handleColumnDragStart($event, index)"
+            @dragover="handleColumnDragOver($event)"
+            @dragleave="handleColumnDragLeave($event)"
+            @dragenter.prevent
+            @drop="handleColumnDrop($event, index)"
+          >
+            <div class="column-header">
+              <!-- Drag handle for column -->
+              <div class="column-drag-handle" title="Arrastrar para reordenar columna">
+                <i class="pi pi-grip-lines"></i>
+              </div>
+              
+              <!-- Editable column title -->
+              <div class="column-title-container">
+                <!-- Display title when not editing -->
+                <h3 
+                  v-if="!column.isEditing" 
+                  class="column-title"
+                  @click="editColumnTitle(column.id)"
+                  title="Click para editar"
+                >{{ column.name }}</h3>
+                
+                <!-- Input field when editing -->
+                <input
+                  v-else
+                  :id="`column-title-${column.id}`"
+                  type="text"
+                  v-model="column.name"
+                  class="column-title-input"
+                  @blur="saveColumnTitle(column.id)"
+                  @keydown="handleTitleKeydown($event, column.id)"
+                  :placeholder="getDefaultName(column.id)"
+                />
+              </div>
+              <span class="ticket-count">{{ getTicketsForColumn(column.id).length }}</span>
+            </div>
+            
+            <div class="column-content" :id="column.id" @drop="handleDrop($event, column.id)" @dragover="handleDragOver" @dragenter.prevent>
+              <div 
+                v-for="ticket in getTicketsForColumn(column.id)" 
+                :key="ticket.id" 
+                class="kanban-card"
+                draggable="true"
+                @dragstart="handleDragStart($event, ticket)"
+                @click="showTicketPreview(ticket)"
+              >
+                <div class="card-header">
+                  <span :class="['priority-badge', normalizePriority(ticket.priority)]">
+                    {{ translatePriority(ticket.priority) }}
+                  </span>
+                  <span class="ticket-id">#{{ ticket.id.split('-')[1] || ticket.id }}</span>
+                </div>
+                
+                <h4 class="card-title">{{ ticket.title }}</h4>
+                
+                <!-- Etiquetas del ticket -->
+                <div v-if="ticketTags(ticket.id).length > 0" class="ticket-tags">
+                  <span
+                    v-for="tag in ticketTags(ticket.id)"
+                    :key="tag.id"
+                    class="ticket-tag"
+                    :style="{ backgroundColor: tag.color }"
+                  >
+                    {{ tag.name }}
+                  </span>
+                </div>
+                
+                <div class="card-footer">
+                  <span class="date-info">{{ formatDate(ticket.updatedAt || ticket.createdAt) }}</span>
+                  <div class="assignee">
+                    <span v-if="ticket.assignedTo" class="avatar" :title="getAssignedUserName(ticket.assignedTo)">
+                      {{ getUserInitials(ticket.assignedTo) }}
+                    </span>
+                    <span v-else class="unassigned-indicator" title="Sin asignar">
+                      <i class="pi pi-user-plus"></i>
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
+              <div v-if="getTicketsForColumn(column.id).length === 0" class="empty-column">
+                <p>No hay tickets en esta columna</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Modal para la vista previa del ticket -->
+    <div v-if="previewTicket" class="ticket-preview-modal" @click.self="closePreview">
+      <div class="ticket-preview-content">
+        <div class="preview-header">
+          <div class="preview-title-section">
+            <span :class="['priority-badge', normalizePriority(previewTicket.priority)]">
+              {{ translatePriority(previewTicket.priority) }}
+            </span>
+            <h3 class="preview-title">{{ previewTicket.title }}</h3>
+            <span class="ticket-id">#{{ previewTicket.id.split('-')[1] || previewTicket.id }}</span>
+          </div>
+          <button class="close-preview-btn" @click="closePreview">
+            <i class="pi pi-times"></i>
+          </button>
+        </div>
+        
+        <div class="preview-body">
+          <div class="preview-info-group">
+            <h4>Detalles</h4>
+            <div class="preview-info-item">
+              <span class="info-label">Estado:</span>
+              <span :class="['status-label', previewTicket.status]">{{ translateStatus(previewTicket.status) }}</span>
+            </div>
+            <div class="preview-info-item">
+              <span class="info-label">Categoría:</span>
+              <span>{{ previewTicket.category || 'No especificada' }}</span>
+            </div>
+            <div class="preview-info-item">
+              <span class="info-label">Fecha:</span>
+              <span>{{ formatDate(previewTicket.createdAt) }}</span>
+            </div>
+            <div class="preview-info-item">
+              <span class="info-label">Última actualización:</span>
+              <span>{{ formatDate(previewTicket.updatedAt) }}</span>
+            </div>
+          </div>
+          
+          <div class="preview-description-group">
+            <h4>Descripción</h4>
+            <p class="ticket-description">{{ previewTicket.description }}</p>
+          </div>
+          
+          <div class="preview-tag-group">
+            <h4>Etiquetas</h4>
+            
+            <div v-if="ticketTags(previewTicket.id).length > 0" class="preview-tags">
+              <div 
+                v-for="tag in ticketTags(previewTicket.id)" 
+                :key="tag.id" 
+                class="preview-tag"
+                :style="{ backgroundColor: tag.color }"
+              >
+                {{ tag.name }}
+                <span class="tag-remove" @click="removeTagFromTicket(previewTicket.id, tag.id)" title="Eliminar etiqueta">
+                  <i class="pi pi-times"></i>
+                </span>
+              </div>
+            </div>
+            <div v-else class="no-tags">
+              No hay etiquetas asignadas a este ticket
+            </div>
+            
+            <div class="tag-selector">
+              <select 
+                v-model="selectedTagId" 
+                class="tag-select" 
+                :disabled="availableTagsForTicket(previewTicket.id).length === 0"
+              >
+                <option value="">Seleccionar etiqueta</option>
+                <option 
+                  v-for="tag in availableTagsForTicket(previewTicket.id)" 
+                  :key="tag.id" 
+                  :value="tag.id"
+                >
+                  {{ tag.name }}
+                </option>
+              </select>
+              <button 
+                class="add-tag-btn" 
+                @click="addTagToTicket(previewTicket.id, selectedTagId)"
+                :disabled="!selectedTagId"
+              >
+                <i class="pi pi-plus"></i> Añadir
+              </button>
+            </div>
+          </div>
+          
+          <div class="preview-actions">
+            <div class="assignment-section">
+              <div class="current-assignment">
+                <span class="info-label">Asignado a:</span>
+                <span class="assigned-user">{{ getAssignedUserName(previewTicket.assignedTo) }}</span>
+              </div>
+              <button class="assign-btn" @click="openAssignModal">
+                <i class="pi pi-user"></i>
+                {{ previewTicket.assignedTo ? 'Reasignar' : 'Asignar' }}
+              </button>
+            </div>
+            <router-link :to="`/tickets/${previewTicket.id}`" class="view-details-btn">
+              Ver detalles completos
+            </router-link>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Modal para asignar ticket -->
+    <div v-if="showAssignModal" class="assign-modal" @click.self="closeAssignModal">
+      <div class="assign-modal-content">
+        <div class="assign-modal-header">
+          <h3>{{ previewTicket?.assignedTo ? 'Reasignar Ticket' : 'Asignar Ticket' }}</h3>
+          <button class="close-modal-btn" @click="closeAssignModal">
+            <i class="pi pi-times"></i>
+          </button>
+        </div>
+        
+        <div class="assign-modal-body">
+          <div class="ticket-info">
+            <h4>{{ previewTicket?.title }}</h4>
+            <p class="ticket-id-info">#{{ previewTicket?.id.split('-')[1] || previewTicket?.id }}</p>
+          </div>
+          
+          <div class="current-assignment-info" v-if="previewTicket?.assignedTo">
+            <p><strong>Actualmente asignado a:</strong> {{ getAssignedUserName(previewTicket?.assignedTo) }}</p>
+          </div>
+          
+          <div class="user-selection">
+            <label for="userSelect">Seleccionar usuario:</label>
+            <select 
+              id="userSelect" 
+              v-model="selectedUserId" 
+              class="user-select"
+              :disabled="assignmentLoading"
+            >
+              <option value="">-- Seleccionar usuario --</option>
+              <option 
+                v-for="user in availableUsers" 
+                :key="user.id" 
+                :value="user.id"
+              >
+                {{ user.firstName }} {{ user.lastName }} ({{ user.role }})
+              </option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="assign-modal-actions">
+          <button 
+            v-if="previewTicket?.assignedTo" 
+            class="unassign-btn" 
+            @click="unassignTicket"
+            :disabled="assignmentLoading"
+          >
+            <i class="pi pi-user-minus"></i>
+            Desasignar
+          </button>
+          <button class="cancel-btn" @click="closeAssignModal" :disabled="assignmentLoading">
+            Cancelar
+          </button>
+          <button 
+            class="confirm-btn" 
+            @click="assignTicket"
+            :disabled="!selectedUserId || assignmentLoading"
+          >
+            <i class="pi pi-check" v-if="!assignmentLoading"></i>
+            <i class="pi pi-spin pi-spinner" v-else></i>
+            {{ assignmentLoading ? 'Asignando...' : 'Asignar' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, onMounted, nextTick } from 'vue';
+import { useTicketStore as useTickets } from '@/stores/tickets';
+import { useAuthStore } from '@/stores/auth';
+import { useUsersStore } from '@/stores/users';
+
+// Stores
+const ticketStore = useTickets();
+const authStore = useAuthStore();
+const usersStore = useUsersStore();
+
+// Estado local
+const isLoading = ref(true);
+const hasError = ref(false);
+const errorMessage = ref('');
+const draggedTicket = ref(null);
+const previewTicket = ref(null);
+const showTagManager = ref(false);
+const selectedTagId = ref('');
+
+// Estado para asignaciones
+const showAssignModal = ref(false);
+const selectedUserId = ref('');
+const assignmentLoading = ref(false);
+
+// Estado para arrastrar columnas
+const draggedColumnIndex = ref(null);
+
+// Columnas con persistencia en localStorage
+const columnsData = ref([
+  { id: 'assigned', name: 'Por Hacer', color: '#3498db', isEditing: false },
+  { id: 'in_progress', name: 'En Progreso', color: '#9b59b6', isEditing: false },
+  { id: 'completed', name: 'Completado', color: '#2ecc71', isEditing: false }
+]);
+
+// Estado para la gestión de etiquetas 
+const isEditing = ref(false);
+const currentTag = ref({
+  id: '',
+  name: '',
+  color: '#3498db',
+  category: ''
+});
+const colorOptions = ref([
+  '#3498db', // blue
+  '#9b59b6', // purple
+  '#2ecc71', // green
+  '#e74c3c', // red
+  '#f39c12', // orange
+  '#1abc9c', // teal
+  '#34495e', // dark blue
+  '#7f8c8d', // gray
+  '#d35400', // dark orange
+  '#c0392b', // dark red
+  '#16a085', // dark teal
+  '#8e44ad', // dark purple
+  '#2c3e50', // navy
+  '#f1c40f', // yellow
+  '#27ae60'  // dark green
+]);
+
+// Cargar columnas desde localStorage si están disponibles
+onMounted(() => {
+  const savedColumns = localStorage.getItem('kanbanColumns');
+  if (savedColumns) {
+    try {
+      const parsed = JSON.parse(savedColumns);
+      // Unir nombres guardados con la estructura predeterminada
+      columnsData.value = columnsData.value.map(col => {
+        const savedColumn = parsed.find(c => c.id === col.id);
+        return savedColumn ? {
+          ...col,
+          name: savedColumn.name || col.name,
+          isEditing: false // Siempre comienza sin editar
+        } : col;
+      });
+    } catch (e) {
+      console.error('Error al cargar los nombres de las columnas guardadas:', e);
+    }
+  }
+});
+
+// Función de debugging para entender el estado de los tickets
+const debugTicketState = () => {
+  const currentUserId = authStore.user?.id;
+  const currentUserEmail = authStore.user?.email;
+  console.log('=== DEBUG KANBAN STATE ===');
+  console.log('Usuario actual ID:', currentUserId);
+  console.log('Usuario actual Email:', currentUserEmail);
+  console.log('Total tickets en store:', ticketStore.tickets.length);
+  
+  ticketStore.tickets.forEach((ticket, index) => {
+    const isCreatedByUser = 
+      ticket.createdBy === currentUserId || 
+      ticket.userID === currentUserId ||
+      (currentUserEmail && ticket.createdBy === currentUserEmail);
+      
+    console.log(`Ticket ${index + 1}:`, {
+      id: ticket.id,
+      title: ticket.title,
+      status: ticket.status,
+      assignedTo: ticket.assignedTo,
+      createdBy: ticket.createdBy,
+      userID: ticket.userID,
+      isAssignedToCurrentUser: ticket.assignedTo === currentUserId,
+      isCreatedByCurrentUser: isCreatedByUser,
+      createdByEmail: ticket.createdBy === currentUserEmail
+    });
+  });
+  
+  console.log('Tickets filtrados:', filteredTickets.value.length);
+  console.log('=== FIN DEBUG ===');
+};
+
+// Cargar datos al montar el componente
+onMounted(async () => {
+  try {
+    isLoading.value = true;
+    
+    // Cargar usuarios disponibles para asignación
+    await usersStore.fetchUsers();
+    console.log('Usuarios cargados:', usersStore.users.length);
+    
+    // Cargar todos los tickets primero (no solo del usuario)
+    await ticketStore.fetchTickets();
+    console.log('Tickets totales cargados:', ticketStore.tickets.length);
+    
+    // Verificar el usuario actual
+    if (authStore.user?.id) {
+      console.log('Usuario actual autenticado:', authStore.user.id);
+      // Debug del estado actual
+      debugTicketState();
+    } else {
+      console.error("No hay usuario autenticado");
+      errorMessage.value = "No se pudo identificar al usuario actual";
+      hasError.value = true;
+    }
+    
+    // Cargar etiquetas disponibles
+    await ticketStore.fetchTags();
+    
+    // Cargar el orden de las columnas desde localStorage
+    const savedColumnOrder = localStorage.getItem('kanbanColumnOrder');
+    if (savedColumnOrder) {
+      try {
+        const orderMap = JSON.parse(savedColumnOrder);
+        // Reorganizar las columnas según el orden guardado
+        columnsData.value.sort((a, b) => {
+          const indexA = orderMap[a.id] !== undefined ? orderMap[a.id] : 999;
+          const indexB = orderMap[b.id] !== undefined ? orderMap[b.id] : 999;
+          return indexA - indexB;
+        });
+      } catch (e) {
+        console.error('Error al cargar el orden de las columnas:', e);
+      }
+    }
+    
+    isLoading.value = false;
+  } catch (error) {
+    console.error('Error al cargar los datos:', error);
+    hasError.value = true;
+    errorMessage.value = 'No se pudieron cargar los tickets. Por favor, intenta de nuevo más tarde.';
+    isLoading.value = false;
+  }
+});
+
+// Mostrar vista previa del ticket
+const showTicketPreview = (ticket) => {
+  previewTicket.value = ticket;
+  selectedTagId.value = ''; // Resetear la selección de etiquetas
+};
+
+// Cerrar vista previa
+const closePreview = () => {
+  previewTicket.value = null;
+};
+
+// Formatear fecha corta (para las tarjetas)
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now - date;
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  
+  if (diffDays === 0) {
+    // Hoy, mostrar hora
+    return `Hoy, ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+  } else if (diffDays === 1) {
+    return 'Ayer';
+  } else if (diffDays < 7) {
+    const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+    return days[date.getDay()];
+  } else {
+    return `${date.getDate()}/${date.getMonth() + 1}`;
+  }
+};
+
+// Formatear fecha larga (para el modal)
+const formatDateLong = (dateString) => {
+  if (!dateString) return '';
+  
+  const date = new Date(dateString);
+  const options = { 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  };
+  
+  return date.toLocaleDateString('es-ES', options);
+};
+
+// Obtener tickets filtrados por el usuario actual
+const filteredTickets = computed(() => {
+  if (!ticketStore.tickets || ticketStore.tickets.length === 0) {
+    return [];
+  }
+  
+  // Obtener ID del usuario actual
+  const currentUserId = authStore.user?.id;
+  if (!currentUserId) {
+    console.warn('No hay usuario actual para filtrar tickets');
+    return [];
+  }
+  
+  // Filtrar solo tickets relevantes para el usuario actual
+  const currentUserEmail = authStore.user?.email;
+  
+  const filtered = ticketStore.tickets.filter(ticket => {
+    // 1. Tickets asignados específicamente al usuario actual
+    if (ticket.assignedTo === currentUserId) {
+      return true;
+    }
+    
+    // 2. Tickets creados por el usuario actual
+    // Puede ser por ID de usuario (creación normal) o por email (tickets del widget)
+    const isCreatedByUser = 
+      ticket.createdBy === currentUserId || 
+      ticket.userID === currentUserId ||
+      (currentUserEmail && ticket.createdBy === currentUserEmail);
+    
+    if (isCreatedByUser && (!ticket.assignedTo || ticket.assignedTo === '')) {
+      return true;
+    }
+    
+    return false;
+  });
+  
+  console.log(`Tickets filtrados para usuario ${currentUserId}:`, filtered.length);
+  console.log('Detalles de filtrado:', filtered.map(t => ({
+    id: t.id,
+    title: t.title,
+    assignedTo: t.assignedTo,
+    createdBy: t.createdBy,
+    userID: t.userID,
+    status: t.status
+  })));
+  
+  return filtered;
+});
+
+// Obtener tickets para una columna específica
+const getTicketsForColumn = (columnId) => {
+  if (!filteredTickets.value || !Array.isArray(filteredTickets.value)) {
+    return [];
+  }
+  
+  const currentUserId = authStore.user?.id;
+  
+  if (columnId === 'assigned') {
+    // "Por Hacer" - Solo tickets que están específicamente asignados al usuario
+    // O tickets creados por el usuario que aún no están asignados (para que pueda trabajar en ellos)
+    return filteredTickets.value.filter(ticket => {
+      // Tickets asignados al usuario actual con estado 'assigned'
+      if (ticket.assignedTo === currentUserId && ticket.status === 'assigned') {
+        return true;
+      }
+      
+      // Tickets creados por el usuario que aún no están asignados a nadie (estado 'open')
+      const currentUserEmail = authStore.user?.email;
+      const isCreatedByUser = 
+        ticket.createdBy === currentUserId || 
+        ticket.userID === currentUserId ||
+        (currentUserEmail && ticket.createdBy === currentUserEmail);
+        
+      if (isCreatedByUser && 
+          (!ticket.assignedTo || ticket.assignedTo === '') && 
+          ticket.status === 'open') {
+        return true;
+      }
+      
+      return false;
+    });
+  } else if (columnId === 'in_progress') {
+    // "En Progreso" - Solo tickets en progreso asignados al usuario
+    return filteredTickets.value.filter(ticket => 
+      ticket.status === 'in_progress' && ticket.assignedTo === currentUserId
+    );
+  } else if (columnId === 'completed') {
+    // "Completado" - Solo tickets resueltos/cerrados asignados al usuario
+    return filteredTickets.value.filter(ticket => 
+      (ticket.status === 'resolved' || ticket.status === 'closed') && 
+      ticket.assignedTo === currentUserId
+    );
+  }
+  
+  return [];
+};
+
+// Normalizar prioridad para mostrar consistentemente
+const normalizePriority = (priority) => {
+  return ticketStore.normalizePriority(priority).toLowerCase();
+};
+
+// Traducir prioridad para mostrar
+const translatePriority = (priority) => {
+  const normalizedPriority = normalizePriority(priority);
+  
+  const priorityMap = {
+    'low': 'Baja',
+    'medium': 'Media',
+    'high': 'Alta',
+    'urgent': 'Urgente'
+  };
+  
+  return priorityMap[normalizedPriority] || 'Media';
+};
+
+// Traducir estado
+const translateStatus = (status) => {
+  return ticketStore.translateStatus(status);
+};
+
+// Obtener iniciales de un usuario
+const getUserInitials = (userId) => {
+  // En un escenario real, esto obtendría datos del usuario
+  // Simplificado para demostración
+  if (!userId) return '';
+  
+  const userName = getAssignedUserName(userId);
+  if (userName === 'Sin asignar') return '??';
+  
+  // Extraer iniciales del nombre (asumiendo formato "Nombre Apellido")
+  const parts = userName.split(' ');
+  if (parts.length >= 2) {
+    return `${parts[0].charAt(0)}${parts[1].charAt(0)}`;
+  }
+  
+  return parts[0].charAt(0);
+};
+
+// Obtener nombre de un usuario
+const getAssignedUserName = (userId) => {
+  if (!userId) return 'Sin asignar';
+  
+  // Buscar el usuario en el store de usuarios
+  const user = usersStore.users.find(u => u.id === userId);
+  if (user) {
+    return `${user.firstName} ${user.lastName}`;
+  }
+  
+  // Si es el usuario actual, usar información del authStore
+  if (userId === authStore.user?.id) {
+    return authStore.userFullName || 'Usuario actual';
+  }
+  
+  // Fallback si no se encuentra el usuario
+  return `Usuario ${userId}`;
+};
+
+// Manejar inicio de arrastre
+const handleDragStart = (event, ticket) => {
+  draggedTicket.value = ticket;
+  event.dataTransfer.effectAllowed = 'move';
+  event.dataTransfer.setData('text/plain', ticket.id);
+  
+  // Añadir clase visual durante el arrastre
+  event.target.classList.add('dragging');
+};
+
+// Manejar soltar ticket
+const handleDrop = async (event, columnId) => {
+  event.preventDefault();
+  
+  // Eliminar clases visuales
+  document.querySelectorAll('.kanban-card').forEach(card => {
+    card.classList.remove('dragging');
+  });
+  
+  if (!draggedTicket.value) return;
+  
+  const ticketId = draggedTicket.value.id;
+  const originalStatus = draggedTicket.value.status;
+  let newStatus = '';
+  
+  // Determinar nuevo estado según la columna
+  const currentUserId = authStore.user?.id;
+  let assignToUser = null;
+  
+  if (columnId === 'assigned') {
+    newStatus = 'assigned';
+    // Si se mueve a "Por Hacer" y no está asignado, asignarlo al usuario actual
+    if (!draggedTicket.value.assignedTo || draggedTicket.value.assignedTo === '') {
+      assignToUser = currentUserId;
+    }
+  } else if (columnId === 'in_progress') {
+    newStatus = 'in_progress';
+    // Si se mueve a "En Progreso" y no está asignado, asignarlo al usuario actual
+    if (!draggedTicket.value.assignedTo || draggedTicket.value.assignedTo === '') {
+      assignToUser = currentUserId;
+    }
+  } else if (columnId === 'completed') {
+    newStatus = 'resolved';
+  }
+  
+  // Evitar actualizaciones innecesarias
+  if (originalStatus === newStatus) return;
+  
+  try {
+    // Encontrar el ticket para asegurarse de tener las etiquetas actuales antes de actualizar
+    const ticketIndex = ticketStore.tickets.findIndex(t => t.id === ticketId);
+    
+    if (ticketIndex !== -1) {
+      // Obtener el ticket actual con todas sus propiedades incluyendo etiquetas
+      const currentTicket = ticketStore.tickets[ticketIndex];
+      const currentTags = currentTicket.tags ? [...currentTicket.tags] : [];
+      
+      // Preparar datos de actualización
+      const updateData = { status: newStatus };
+      
+      // Si necesita ser asignado al usuario actual, incluir esa información
+      if (assignToUser) {
+        updateData.assignedTo = assignToUser;
+        console.log(`Asignando ticket ${ticketId} al usuario ${assignToUser} al moverlo a columna ${columnId}`);
+      }
+      
+      // Actualizar el ticket en el store
+      const updatedTicket = await ticketStore.updateTicket(ticketId, updateData);
+      
+      // Forzar actualización de las etiquetas del ticket en la vista local para evitar desaparición visual
+      if (updatedTicket) {
+        // Asegurarse de que la propiedad tags exista y tenga las etiquetas correctas
+        if (!updatedTicket.tags && currentTags.length > 0) {
+          updatedTicket.tags = currentTags;
+        }
+        
+        // Actualizar el ticket en el array ticketStore.tickets para garantizar una vista consistente
+        const updatedIndex = ticketStore.tickets.findIndex(t => t.id === ticketId);
+        if (updatedIndex !== -1) {
+          if (!ticketStore.tickets[updatedIndex].tags) {
+          ticketStore.tickets[updatedIndex].tags = currentTags;
+          }
+          // Asegurar que la asignación se refleje correctamente
+          if (assignToUser) {
+            ticketStore.tickets[updatedIndex].assignedTo = assignToUser;
+          }
+        }
+      }
+    } else {
+      console.error('Ticket no encontrado:', ticketId);
+      errorMessage.value = 'No se encontró el ticket para actualizar';
+      hasError.value = true;
+    }
+  } catch (error) {
+    console.error('Error al actualizar el estado del ticket:', error);
+    errorMessage.value = 'No se pudo actualizar el estado del ticket';
+    hasError.value = true;
+  } finally {
+    // Reiniciar la referencia del ticket arrastrado
+    draggedTicket.value = null;
+  }
+};
+
+// Manejar el evento dragover para permitir soltar
+const handleDragOver = (event) => {
+  event.preventDefault();
+};
+
+// Funciones para gestionar etiquetas
+const ticketTags = (ticketId) => {
+  if (!ticketStore.tickets) return [];
+  
+  const ticket = ticketStore.tickets.find(t => t.id === ticketId);
+  if (!ticket || !ticket.tags) return [];
+  
+  return ticket.tags.map(tag => {
+    if (typeof tag === 'string') {
+      // Si es un ID, buscar la etiqueta en el store
+      const foundTag = ticketStore.tags.find(t => t.id === tag);
+      return foundTag || { id: tag, name: 'Etiqueta', color: '#cccccc' };
+    }
+    return tag;
+  });
+};
+
+const availableTagsForTicket = (ticketId) => {
+  // Obtener todas las etiquetas que no están ya asignadas al ticket
+  const currentTagIds = ticketTags(ticketId).map(tag => tag.id);
+  return ticketStore.tags.filter(tag => !currentTagIds.includes(tag.id));
+};
+
+const addTagToTicket = async (ticketId, tagId) => {
+  if (!tagId) return;
+  
+  try {
+    await ticketStore.addTagToTicket(ticketId, tagId);
+    selectedTagId.value = ''; // Limpiar selección
+  } catch (error) {
+    console.error('Error al añadir etiqueta:', error);
+  }
+};
+
+const removeTagFromTicket = async (ticketId, tagId) => {
+  try {
+    await ticketStore.removeTagFromTicket(ticketId, tagId);
+  } catch (error) {
+    console.error('Error al eliminar etiqueta:', error);
+  }
+};
+
+// Funciones para gestionar el panel de etiquetas
+const editTag = (tag) => {
+  currentTag.value = { ...tag };
+  isEditing.value = true;
+};
+
+const saveTag = async () => {
+  try {
+    if (isEditing.value && currentTag.value.id) {
+      // Actualizar etiqueta existente
+      await ticketStore.updateTag(currentTag.value.id, {
+        name: currentTag.value.name,
+        color: currentTag.value.color,
+        category: currentTag.value.category
+      });
+    } else {
+      // Crear nueva etiqueta
+      await ticketStore.createTag({
+        name: currentTag.value.name,
+        color: currentTag.value.color,
+        category: currentTag.value.category
+      });
+    }
+    resetTagForm();
+  } catch (error) {
+    console.error('Error al guardar etiqueta:', error);
+  }
+};
+
+const deleteTag = async (tagId) => {
+  if (confirm('¿Estás seguro de que deseas eliminar esta etiqueta?')) {
+    try {
+      await ticketStore.deleteTag(tagId);
+    } catch (error) {
+      console.error('Error al eliminar etiqueta:', error);
+    }
+  }
+};
+
+const resetTagForm = () => {
+  currentTag.value = {
+    id: '',
+    name: '',
+    color: colorOptions.value[0],
+    category: ''
+  };
+  isEditing.value = false;
+};
+
+// Función para habilitar la edición del título de la columna
+const editColumnTitle = (columnId) => {
+  const column = columnsData.value.find(col => col.id === columnId);
+  if (column) {
+    column.isEditing = true;
+    // Usando nextTick para asegurarse de que el input esté enfocado después de la actualización del DOM
+    nextTick(() => {
+      const input = document.getElementById(`column-title-${columnId}`);
+      if (input) {
+        input.focus();
+        input.select();
+      }
+    });
+  }
+};
+
+// Función para guardar el título de la columna al perder el enfoque o presionar Enter
+const saveColumnTitle = (columnId) => {
+  const column = columnsData.value.find(col => col.id === columnId);
+  if (column) {
+    // Recortar el título y asegurarse de que no esté vacío
+    column.name = column.name.trim() || getDefaultName(columnId);
+    column.isEditing = false;
+    
+    // Guardar en localStorage
+    localStorage.setItem('kanbanColumns', JSON.stringify(columnsData.value));
+  }
+};
+
+// Función para obtener el nombre predeterminado para una columna si el título está vacío
+const getDefaultName = (columnId) => {
+  switch (columnId) {
+    case 'assigned': return 'Por Hacer';
+    case 'in_progress': return 'En Progreso';
+    case 'completed': return 'Completado';
+    default: return 'Sin título';
+  }
+};
+
+// Función para manejar eventos de tecla presionada mientras se edita
+const handleTitleKeydown = (event, columnId) => {
+  if (event.key === 'Enter') {
+    saveColumnTitle(columnId);
+  } else if (event.key === 'Escape') {
+    // Revertir al título original y salir del modo de edición
+    const column = columnsData.value.find(col => col.id === columnId);
+    if (column) {
+      column.name = getDefaultName(columnId);
+      column.isEditing = false;
+    }
+  }
+};
+
+// Funciones para arrastrar y soltar columnas
+const handleColumnDragStart = (event, index) => {
+  // Guardamos el índice de la columna que se está arrastrando
+  draggedColumnIndex.value = index;
+  
+  // Añadir clase de arrastre para efectos visuales
+  event.target.classList.add('column-dragging');
+  
+  // Establecer datos para la operación de arrastre
+  event.dataTransfer.effectAllowed = 'move';
+  event.dataTransfer.setData('text/plain', index.toString());
+  
+  // Añadir un pequeño retraso para que la transición sea visible
+  setTimeout(() => {
+    // Añadir clase a todas las otras columnas para mostrar que pueden ser destino
+    document.querySelectorAll('.kanban-column').forEach((col, i) => {
+      if (i !== index) {
+        col.classList.add('column-droppable');
+      }
+    });
+  }, 50);
+};
+
+const handleColumnDragOver = (event) => {
+  // Prevenir comportamiento por defecto para permitir soltar
+  event.preventDefault();
+  
+  // Cambiar el cursor para indicar que se puede soltar
+  event.dataTransfer.dropEffect = 'move';
+  
+  // Añadir clase a la columna sobre la que se arrastra
+  const columnElement = event.currentTarget;
+  if (columnElement && !columnElement.classList.contains('column-dragging')) {
+    // Remover clase de dragover de todas las columnas primero
+    document.querySelectorAll('.kanban-column').forEach(col => {
+      col.classList.remove('column-dragover');
+    });
+    // Añadir solo a la columna actual
+    columnElement.classList.add('column-dragover');
+  }
+};
+
+const handleColumnDragLeave = (event) => {
+  // Remover clase al salir de la zona de soltar
+  event.currentTarget.classList.remove('column-dragover');
+};
+
+const handleColumnDrop = (event, dropIndex) => {
+  // Prevenir comportamiento por defecto
+  event.preventDefault();
+  
+  // Remover clases de estilo de todas las columnas
+  document.querySelectorAll('.kanban-column').forEach(col => {
+    col.classList.remove('column-dragging', 'column-dragover', 'column-droppable');
+  });
+  
+  // Si no hay columna arrastrada o se suelta en la misma posición, no hacer nada
+  if (draggedColumnIndex.value === null || draggedColumnIndex.value === dropIndex) {
+    draggedColumnIndex.value = null;
+    return;
+  }
+  
+  // Mover la columna a la nueva posición
+  const columnToMove = columnsData.value.splice(draggedColumnIndex.value, 1)[0];
+  columnsData.value.splice(dropIndex, 0, columnToMove);
+  
+  // Guardar el nuevo orden en localStorage
+  const orderMap = {};
+  columnsData.value.forEach((col, index) => {
+    orderMap[col.id] = index;
+  });
+  localStorage.setItem('kanbanColumnOrder', JSON.stringify(orderMap));
+  
+  // Resetear el índice de arrastre
+  draggedColumnIndex.value = null;
+};
+
+// Funciones para gestión de asignaciones
+const availableUsers = computed(() => {
+  return usersStore.users.filter(user => 
+    user.active && (user.role === 'admin' || user.role === 'support' || user.role === 'assistant')
+  );
+});
+
+const openAssignModal = () => {
+  selectedUserId.value = previewTicket.value?.assignedTo || '';
+  showAssignModal.value = true;
+};
+
+const closeAssignModal = () => {
+  showAssignModal.value = false;
+  selectedUserId.value = '';
+  assignmentLoading.value = false;
+};
+
+const assignTicket = async () => {
+  if (!previewTicket.value || !selectedUserId.value) return;
+  
+  assignmentLoading.value = true;
+  console.log('🎯 KANBAN: Iniciando asignación desde modal');
+  
+  try {
+    const result = await ticketStore.assignTicket(previewTicket.value.id, selectedUserId.value);
+    console.log('🎯 KANBAN: Resultado de asignación:', result);
+    
+    // Usar función de debugging del store
+    ticketStore.debugAssignment(previewTicket.value.id);
+    
+    // Actualizar el ticket en la vista previa usando datos reales del store
+    const updatedTicket = ticketStore.tickets.find(t => t.id === previewTicket.value.id);
+    if (updatedTicket) {
+      previewTicket.value.assignedTo = updatedTicket.assignedTo;
+      previewTicket.value.status = updatedTicket.status;
+      console.log('🎯 KANBAN: Vista previa actualizada:', {
+        assignedTo: previewTicket.value.assignedTo,
+        status: previewTicket.value.status
+      });
+    } else {
+      // Fallback si no se encuentra en el store
+      previewTicket.value.assignedTo = selectedUserId.value;
+      previewTicket.value.status = 'assigned';
+    }
+    
+    closeAssignModal();
+  } catch (error) {
+    console.error('❌ KANBAN: Error al asignar ticket:', error);
+    alert('Error al asignar el ticket. Por favor, inténtalo de nuevo.');
+  } finally {
+    assignmentLoading.value = false;
+  }
+};
+
+const unassignTicket = async () => {
+  if (!previewTicket.value) return;
+  
+  assignmentLoading.value = true;
+  console.log('🗑️ KANBAN: Iniciando desasignación desde modal');
+  
+  try {
+    const result = await ticketStore.updateTicket(previewTicket.value.id, { 
+      assignedTo: null,
+      status: 'open'
+    });
+    console.log('🗑️ KANBAN: Resultado de desasignación:', result);
+    
+    // Usar función de debugging del store
+    ticketStore.debugAssignment(previewTicket.value.id);
+    
+    // Actualizar el ticket en la vista previa usando datos reales del store
+    const updatedTicket = ticketStore.tickets.find(t => t.id === previewTicket.value.id);
+    if (updatedTicket) {
+      previewTicket.value.assignedTo = updatedTicket.assignedTo;
+      previewTicket.value.status = updatedTicket.status;
+      console.log('🗑️ KANBAN: Vista previa actualizada:', {
+        assignedTo: previewTicket.value.assignedTo,
+        status: previewTicket.value.status
+      });
+    } else {
+      // Fallback si no se encuentra en el store
+      previewTicket.value.assignedTo = null;
+      previewTicket.value.status = 'open';
+    }
+    
+    closeAssignModal();
+  } catch (error) {
+    console.error('❌ KANBAN: Error al desasignar ticket:', error);
+    alert('Error al desasignar el ticket. Por favor, inténtalo de nuevo.');
+  } finally {
+    assignmentLoading.value = false;
+  }
+};
+</script>
+
+<style scoped>
+/* Estilos básicos */
+.kanban-board {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-secondary);
+}
+
+.content-wrapper {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 3rem;
+  flex: 1;
+}
+
+/* Section header */
+.section-header {
+  margin-bottom: 2rem;
+  text-align: left;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  font-weight: 600;
+  text-align: left;
+  background-color: var(--bg-tertiary);
+  border-radius: 12px;
+  padding: 0.75rem 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border-left: 4px solid var(--primary-color);
+}
+
+.title-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  background-color: var(--primary-color);
+  border-radius: 10px;
+  margin-right: 1rem;
+  color: white;
+  box-shadow: 0 4px 10px rgba(var(--primary-rgb), 0.25);
+}
+
+.title-icon i {
+  font-size: 1.2rem;
+}
+
+.section-description {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  margin-left: 0.5rem;
+}
+
+/* Kanban columns */
+.kanban-container {
+  display: flex;
+  gap: 1.5rem;
+  overflow-x: auto;
+  padding-bottom: 1.5rem;
+  min-height: 70vh;
+}
+
+.kanban-column {
+  flex: 1;
+  min-width: 350px;
+  max-width: 400px;
+  background-color: #f7f9fc;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease;
+  position: relative;
+  
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    transition: all 0.2s ease;
+    border-radius: 10px;
+  }
+  
+  &:hover::after {
+    box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.2);
+  }
+}
+
+.column-header {
+  padding: 1.25rem 1.25rem 0.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.column-header h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #37474f;
+  letter-spacing: 0.02em;
+}
+
+.ticket-count {
+  background-color: rgba(0, 0, 0, 0.06);
+  border-radius: 30px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #546e7a;
+}
+
+.column-content {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  overflow-y: auto;
+  min-height: 300px;
+}
+
+/* Tarjetas de Kanban */
+.kanban-card {
+  background-color: white;
+  border-radius: 8px;
+  margin-bottom: 0.9rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.07);
+  padding: 1rem;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  border: 1px solid #f0f0f0;
+}
+
+.kanban-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.priority-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.75rem;
+  border-radius: 99px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  
+  &::before {
+    content: "";
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+  }
+  
+  &.low {
+    background: rgba(3, 105, 161, 0.1); 
+    color: #0369a1; 
+    &::before { background-color: #0369a1; }
+  }
+  &.medium {
+    background: rgba(67, 56, 202, 0.1); 
+    color: #4338ca; 
+    &::before { background-color: #4338ca; }
+  }
+  &.high {
+    background: rgba(55, 48, 163, 0.1); 
+    color: #3730a3; 
+    &::before { background-color: #3730a3; }
+  }
+  &.urgent {
+    background: rgba(91, 33, 182, 0.1); 
+    color: #5b21b6; 
+    &::before { background-color: #5b21b6; }
+  }
+}
+
+.ticket-id {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.card-title {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  color: #263238;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 0.6rem;
+  border-top: 1px solid #f5f5f5;
+}
+
+.date-info {
+  color: #78909c;
+  font-size: 0.8rem;
+}
+
+.assignee {
+  display: flex;
+  align-items: center;
+}
+
+.avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: #6200ea;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.unassigned-indicator {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: #e0e0e0;
+  color: #757575;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  border: 2px dashed #bdbdbd;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: #d0d0d0;
+    color: #424242;
+    border-color: #9e9e9e;
+  }
+}
+
+.empty-column {
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 0.9rem;
+  text-align: center;
+  border: 2px dashed #e0e0e0;
+  border-radius: 8px;
+  margin: 0.5rem 0;
+}
+
+/* Estilos de mensaje de estado */
+.status-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 0;
+  text-align: center;
+  color: #777;
+}
+
+.status-message i {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.status-message.loading i {
+  color: #6200ea;
+}
+
+.status-message.error i {
+  color: #e74c3c;
+}
+
+.hero-section {
+  position: relative;
+  padding: 3.5rem 1rem 4rem;
+  background-color: var(--primary-color);
+  color: white;
+  text-align: center;
+  overflow: hidden;
+  border: none;
+  outline: none;
+  
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.05) 0%, transparent 30%),
+                      radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.05) 0%, transparent 25%);
+  }
+  
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+      -45deg,
+      rgba(255, 255, 255, 0.03),
+      rgba(255, 255, 255, 0.03) 1px,
+      transparent 1px,
+      transparent 8px
+    );
+  }
+  
+  .wave-shape {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 25px;
+    border: none;
+    outline: none;
+    z-index: 10;
+    background: var(--bg-secondary);
+    clip-path: ellipse(60% 90% at 50% 100%);
+  }
+  
+  .hero-content {
+    position: relative;
+    z-index: 5;
+    max-width: 800px;
+    margin: 0 auto;
+    
+    &::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: -25px;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.06);
+      transform: translateX(-110px);
+      z-index: -1;
+    }
+    
+    &::after {
+      content: "";
+      position: absolute;
+      right: 50%;
+      bottom: -40px;
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.06);
+      transform: translateX(120px);
+      z-index: -1;
+    }
+  }
+  
+  .hero-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    color: white;
+    position: relative;
+    text-align: center;
+    display: inline-block;
+    padding: 0 20px;
+    
+    &::before {
+      content: "{ ";
+      position: absolute;
+      left: -15px;
+      top: 0;
+      font-family: monospace;
+      opacity: 0.5;
+      font-size: 2.5rem;
+    }
+    
+    &::after {
+      content: " }";
+      position: absolute;
+      right: -15px;
+      top: 0;
+      font-family: monospace;
+      opacity: 0.5;
+      font-size: 2.5rem;
+    }
+  }
+  
+  .hero-subtitle {
+    font-size: 0.9rem;
+    margin: 0 auto 1.75rem;
+    opacity: 0.9;
+    max-width: 600px;
+    position: relative;
+    display: block;
+    padding: 8px 15px;
+    border-radius: 30px;
+    background-color: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    
+    &::before {
+      content: "";
+      position: absolute;
+      right: -15px;
+      top: -10px;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.04);
+      z-index: -1;
+    }
+    
+    &::after {
+      content: "";
+      position: absolute;
+      left: -12px;
+      bottom: -8px;
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.04);
+      z-index: -1;
+    }
+  }
+}
+
+/* Modal de vista previa de ticket */
+.ticket-preview-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+.ticket-preview-content {
+  background: white;
+  width: 600px;
+  max-width: 90%;
+  max-height: 90vh;
+  border-radius: 12px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1.5rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.preview-title-section {
+  flex: 1;
+}
+
+.preview-title {
+  margin: 0.75rem 0 0.5rem;
+  font-size: 1.25rem;
+  color: #333;
+}
+
+.close-preview-btn {
+  background: none;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.close-preview-btn:hover {
+  background-color: #f2f2f2;
+  color: #333;
+}
+
+.preview-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.preview-info-group {
+  margin-bottom: 1.5rem;
+}
+
+.preview-info-group h4 {
+  margin: 0 0 1rem;
+  font-size: 1rem;
+  color: #546e7a;
+  font-weight: 500;
+}
+
+.preview-info-item {
+  display: flex;
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+}
+
+.info-label {
+  width: 120px;
+  min-width: 120px;
+  color: #78909c;
+}
+
+.status-label {
+  padding: 0.2rem 0.6rem;
+  border-radius: 3px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.status-label.open {
+  background-color: #b3e5fc;
+  color: #0277bd;
+}
+
+.status-label.assigned {
+  background-color: #c8e6c9;
+  color: #2e7d32;
+}
+
+.status-label.in_progress {
+  background-color: #e1bee7;
+  color: #6a1b9a;
+}
+
+.status-label.resolved {
+  background-color: #dcedc8;
+  color: #33691e;
+}
+
+.status-label.closed {
+  background-color: #cfd8dc;
+  color: #455a64;
+}
+
+.preview-description-group {
+  margin-top: 1.5rem;
+}
+
+.preview-description-group h4 {
+  margin: 0 0 1rem;
+  font-size: 1rem;
+  color: #546e7a;
+  font-weight: 500;
+}
+
+.ticket-description {
+  line-height: 1.6;
+  margin: 0;
+  color: #455a64;
+}
+
+.preview-tag-group {
+  margin-top: 1.5rem;
+}
+
+.preview-tags {
+  margin-bottom: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.preview-tag {
+  display: flex;
+  align-items: center;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+  color: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.1));
+}
+
+.tag-remove {
+  margin-left: 0.5rem;
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  cursor: pointer;
+  font-size: 0.7rem;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.4);
+    transform: scale(1.1);
+  }
+}
+
+.tag-selector {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  
+  select {
+    flex-grow: 1;
+    padding: 0.65rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background-color: var(--input-bg);
+    color: var(--text-primary);
+    
+    &:focus {
+      outline: none;
+      border-color: var(--primary-color);
+    }
+  }
+  
+  .add-tag-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.65rem 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    
+    &:hover {
+      background-color: var(--primary-color) !important;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      color: white !important;
+    }
+    
+    &:active, &:focus {
+      background-color: var(--primary-color) !important;
+      color: white !important;
+      outline: none;
+    }
+    
+    &:disabled {
+      background-color: var(--disabled-bg);
+      color: var(--disabled-color);
+      cursor: not-allowed;
+    }
+  }
+}
+
+.preview-actions {
+  padding: 1.25rem;
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid #f0f0f0;
+}
+
+.view-details-btn {
+  background-color: var(--primary-color);
+  color: white;
+  text-decoration: none;
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  
+  &:hover {
+    background-color: var(--primary-color) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+    color: white !important;
+  }
+  
+  &:active, &:focus {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    outline: none;
+  }
+}
+
+/* Estilos responsivos */
+@media (max-width: 768px) {
+  .kanban-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .kanban-column {
+    min-width: auto;
+    max-width: none;
+    margin-bottom: 1.5rem;
+  }
+  
+  .ticket-preview-content {
+    width: 95%;
+    max-width: 95%;
+  }
+}
+
+/* Gestión de etiquetas */
+.tag-management {
+  margin-bottom: 1.5rem;
+  
+  .tag-manager-toggle {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    
+    &:hover {
+      background-color: var(--primary-dark-color);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+    }
+    
+    i {
+      font-size: 1.1rem;
+    }
+  }
+  
+  .tag-manager-panel {
+    background-color: var(--card-bg);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-color);
+    
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+    
+    .tag-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      
+      .tag-item {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem;
+        background-color: var(--bg-tertiary);
+        border-radius: 10px;
+        transition: all 0.2s ease;
+        border: 1px solid var(--border-color);
+        
+        &:hover {
+          background-color: var(--hover-bg);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .tag-color {
+          width: 16px;
+          height: 16px;
+          border-radius: 4px;
+          margin-right: 0.75rem;
+          border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .tag-name {
+          flex-grow: 1;
+          font-weight: 500;
+          font-size: 0.95rem;
+          color: var(--text-primary);
+        }
+        
+        .tag-actions {
+          display: flex;
+          gap: 0.5rem;
+          
+          .tag-action-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: none;
+            background-color: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            
+            &:hover {
+              color: var(--text-primary);
+              background-color: var(--bg-hover);
+            }
+            
+            &.edit:hover {
+              background-color: rgba(var(--primary-rgb), 0.1);
+              color: var(--primary-color);
+            }
+            
+            &.delete:hover {
+              background-color: rgba(220, 38, 38, 0.1);
+              color: #dc2626;
+            }
+            
+            i {
+              font-size: 1rem;
+            }
+          }
+        }
+      }
+      
+      .empty-tags {
+        padding: 1.5rem;
+        text-align: center;
+        color: var(--text-secondary);
+        background-color: var(--bg-tertiary);
+        border-radius: 10px;
+        font-size: 0.95rem;
+      }
+    }
+    
+    .tag-form {
+      padding: 1.25rem;
+      background-color: var(--bg-tertiary);
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      
+      .form-title {
+        margin-top: 0;
+        margin-bottom: 1.25rem;
+        font-size: 1.1rem;
+        color: var(--text-primary);
+        font-weight: 600;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid var(--border-color);
+      }
+      
+      .form-group {
+        margin-bottom: 1.25rem;
+        
+        label {
+          display: block;
+          margin-bottom: 0.5rem;
+          font-weight: 500;
+          font-size: 0.9rem;
+          color: var(--text-secondary);
+        }
+        
+        .form-control {
+          width: 100%;
+          padding: 0.75rem;
+          border-radius: 8px;
+          border: 1px solid var(--border-color);
+          background-color: var(--input-bg);
+          color: var(--text-primary);
+          font-size: 0.95rem;
+          transition: all 0.2s ease;
+          
+          &:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.2);
+          }
+        }
+        
+        .color-input-group {
+          display: flex;
+          gap: 0.5rem;
+          align-items: center;
+          
+          .color-input {
+            flex-grow: 1;
+          }
+          
+          .color-picker {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: transparent;
+            cursor: pointer;
+            overflow: hidden;
+            
+            &::-webkit-color-swatch-wrapper {
+              padding: 0;
+            }
+            
+            &::-webkit-color-swatch {
+              border: none;
+              border-radius: 6px;
+            }
+          }
+        }
+      }
+      
+      .color-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+        
+        .color-option {
+          width: 28px;
+          height: 28px;
+          border-radius: 6px;
+          cursor: pointer;
+          border: 2px solid transparent;
+          transition: all 0.2s ease;
+          position: relative;
+          
+          &:hover {
+            transform: scale(1.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-color: rgba(255, 255, 255, 0.5);
+          }
+          
+          &.active {
+            border-color: var(--text-primary);
+            transform: scale(1.15);
+            
+            &:after {
+              content: "✓";
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              color: white;
+              font-weight: bold;
+              text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+.ticket-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin: 0.75rem 0;
+  
+  .ticket-tag {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 999px;
+    font-weight: 500;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: 100%;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+    color: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.1));
+  }
+}
+
+.no-tags {
+  padding: 0.75rem;
+  text-align: center;
+  color: var(--text-secondary);
+  background-color: var(--bg-tertiary);
+  border-radius: 8px;
+  font-style: italic;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.column-title-container {
+  display: flex;
+  flex: 1;
+}
+
+.column-title {
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 5px 8px;
+  margin: 0;
+  border-radius: 5px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #37474f;
+  letter-spacing: 0.02em;
+  
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.06);
+  }
+  
+  &::after {
+    content: "✎";
+    opacity: 0;
+    margin-left: 6px;
+    font-size: 0.85rem;
+    transition: opacity 0.2s;
+    color: #78909c;
+  }
+  
+  &:hover::after {
+    opacity: 1;
+  }
+}
+
+.column-title-input {
+  width: 100%;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #37474f;
+  padding: 5px 8px;
+  border: 1px solid var(--primary-color);
+  border-radius: 5px;
+  background: white;
+  box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.2);
+  outline: none;
+  
+  &:focus {
+    border-color: var(--primary-color);
+  }
+}
+
+.column-drag-handle {
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  margin-right: 8px;
+  cursor: grab;
+  color: #78909c;
+  border-radius: 4px;
+  
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: #546e7a;
+  }
+  
+  i {
+    font-size: 1rem;
+  }
+  
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+/* Estilos para la columna que se está arrastrando */
+.kanban-column.column-dragging {
+  opacity: 0.4;
+  transform: rotate(1deg) scale(0.98);
+  background: #f7f9fc;
+  z-index: 10;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  
+  * {
+    pointer-events: none;
+  }
+  
+  &::after {
+    border-color: transparent;
+    box-shadow: none;
+  }
+}
+
+/* Columnas que pueden ser destino */
+.kanban-column.column-droppable {
+  transition: all 0.25s cubic-bezier(0.2, 0.9, 0.5, 1);
+}
+
+/* Efecto al pasar sobre una columna destino */
+.kanban-column.column-dragover {
+  background-color: #f0f7ff;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  
+  /* Indicador visual lateral */
+  &::before {
+    content: "";
+    position: absolute;
+    top: 25%;
+    left: -8px;
+    width: 6px;
+    height: 50%;
+    background-color: var(--primary-color);
+    border-radius: 3px;
+    box-shadow: 0 0 8px rgba(var(--primary-rgb), 0.4);
+  }
+  
+  .column-header {
+    background-color: rgba(var(--primary-rgb), 0.08);
+    transition: background-color 0.2s ease;
+  }
+}
+
+/* Mejora de transiciones para el arrastre */
+.kanban-column {
+  transition: all 0.25s cubic-bezier(0.2, 0.9, 0.5, 1);
+  position: relative;
+  
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    transition: all 0.2s ease;
+    border-radius: 10px;
+  }
+  
+  &:hover::after {
+    box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.2);
+  }
+}
+
+/* Estilos para asignación de tickets */
+.assignment-section {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: var(--bg-tertiary);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  
+  .current-assignment {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    
+    .info-label {
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-right: 0.5rem;
+    }
+    
+    .assigned-user {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+  }
+  
+  .assign-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.6rem 1.2rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    
+    &:hover {
+      background-color: var(--primary-dark-color);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+    
+    i {
+      font-size: 1rem;
+    }
+  }
+}
+
+/* Modal de asignación */
+.assign-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  backdrop-filter: blur(2px);
+}
+
+.assign-modal-content {
+  background: white;
+  width: 500px;
+  max-width: 90%;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.assign-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-tertiary);
+  
+  h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: var(--text-primary);
+  }
+  
+  .close-modal-btn {
+    background: none;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background-color 0.2s;
+    
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.1);
+      color: var(--text-primary);
+    }
+  }
+}
+
+.assign-modal-body {
+  padding: 1.5rem;
+  
+  .ticket-info {
+    margin-bottom: 1.5rem;
+    
+    h4 {
+      margin: 0 0 0.5rem;
+      color: var(--text-primary);
+      font-size: 1.1rem;
+    }
+    
+    .ticket-id-info {
+      margin: 0;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+  }
+  
+  .current-assignment-info {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background-color: rgba(var(--primary-rgb), 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(var(--primary-rgb), 0.2);
+    
+    p {
+      margin: 0;
+      color: var(--text-primary);
+    }
+  }
+  
+  .user-selection {
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+    
+    .user-select {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background-color: var(--input-bg);
+      color: var(--text-primary);
+      font-size: 1rem;
+      transition: all 0.2s ease;
+      
+      &:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.2);
+      }
+      
+      &:disabled {
+        background-color: var(--disabled-bg);
+        color: var(--disabled-color);
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+
+.assign-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-top: 1px solid var(--border-color);
+  background-color: var(--bg-tertiary);
+  
+  button {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    
+    i {
+      font-size: 1rem;
+    }
+  }
+  
+  .unassign-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    
+    &:hover:not(:disabled) {
+      background-color: #c82333;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+    }
+  }
+  
+  .cancel-btn {
+    background-color: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    
+    &:hover:not(:disabled) {
+      background-color: var(--bg-hover);
+      color: var(--text-primary);
+    }
+  }
+  
+  .confirm-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    
+    &:hover:not(:disabled) {
+      background-color: var(--primary-dark-color);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(var(--primary-rgb), 0.3);
+    }
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 2.5rem 1rem 5rem;
+    
+    .hero-title {
+      font-size: 1.8rem;
+      padding: 0 10px;
+      margin-bottom: 1.2rem;
+      
+      &::before, &::after {
+        font-size: 1.8rem;
+      }
+    }
+  }
+  
+  .tag-management {
+    margin-top: 2rem;
+  }
+  
+  .kanban-container {
+    padding: 1rem 0.5rem;
+    gap: 1rem;
+  }
+  
+  .assign-modal-content {
+    width: 95%;
+    margin: 1rem;
+  }
+  
+  .assign-modal-actions {
+    flex-direction: column;
+    
+    button {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+}
+</style> 

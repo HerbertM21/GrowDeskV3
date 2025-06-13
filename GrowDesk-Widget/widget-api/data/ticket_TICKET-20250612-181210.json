@@ -1,0 +1,82 @@
+{
+  "id": "TICKET-20250612-181210",
+  "title": "Solicitud de soporte - Martina Cristi",
+  "subject": "Solicitud de soporte - Martina Cristi",
+  "description": "test",
+  "status": "open",
+  "priority": "medium",
+  "createdBy": "",
+  "createdAt": "2025-06-12T18:12:10.842566531Z",
+  "updatedAt": "2025-06-12T18:24:27Z",
+  "messages": [
+    {
+      "id": "MSG-1749751930842573037",
+      "content": "test",
+      "isClient": true,
+      "createdAt": "2025-06-12T18:12:10.842566531Z",
+      "userName": "Martina Cristi",
+      "userEmail": "test@test.com"
+    },
+    {
+      "id": "MSG-1749751933912000480",
+      "content": "a",
+      "isClient": true,
+      "createdAt": "2025-06-12T18:12:13.912028263Z",
+      "userName": "Martina Cristi",
+      "userEmail": "test@test.com"
+    },
+    {
+      "id": "MSG-20250612181213.929",
+      "content": "a",
+      "isClient": true,
+      "createdAt": "2025-06-12T18:12:13Z",
+      "userName": "Martina Cristi",
+      "userEmail": ""
+    },
+    {
+      "id": "MSG-1749751933913034767",
+      "content": "a",
+      "isClient": true,
+      "createdAt": "2025-06-12T18:12:13Z",
+      "userName": "Martina Cristi",
+      "userEmail": "test@test.com"
+    },
+    {
+      "id": "MSG-20250612181222.759",
+      "content": "test",
+      "isClient": false,
+      "createdAt": "2025-06-12T18:12:22Z",
+      "userName": "Agente",
+      "userEmail": ""
+    },
+    {
+      "id": "MSG-20250612182419.785",
+      "content": "a",
+      "isClient": false,
+      "createdAt": "2025-06-12T18:24:19Z",
+      "userName": "Agente",
+      "userEmail": ""
+    },
+    {
+      "id": "MSG-20250612182427.033",
+      "content": "a",
+      "isClient": false,
+      "createdAt": "2025-06-12T18:24:27Z",
+      "userName": "Agente",
+      "userEmail": ""
+    }
+  ],
+  "userEmail": "test@test.com",
+  "userName": "Martina Cristi",
+  "clientName": "Martina Cristi",
+  "clientEmail": "test@test.com",
+  "widgetId": "",
+  "department": "",
+  "metadata": {
+    "url": "http://localhost:4321/",
+    "referrer": "",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+    "screenSize": "2133x1015",
+    "externalId": ""
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "id": "TICKET-20250611-211308",
+  "title": "Solicitud de soporte - Juan",
+  "subject": "Solicitud de soporte - Juan",
+  "description": "test2",
+  "status": "open",
+  "priority": "MEDIUM",
+  "createdBy": "",
+  "createdAt": "2025-06-11T21:13:08.256159173Z",
+  "updatedAt": "2025-06-11T21:48:47.486607607Z",
+  "messages": [
+    {
+      "id": "MSG-1749676388256172449",
+      "content": "test2",
+      "isClient": true,
+      "createdAt": "2025-06-11T21:13:08.256159173Z",
+      "userName": "Juan",
+      "userEmail": "juan@gmail.com"
+    },
+    {
+      "id": "MSG-1749676394640119646",
+      "content": "a",
+      "isClient": true,
+      "createdAt": "2025-06-11T21:13:14.640368716Z",
+      "userName": "Juan",
+      "userEmail": "juan@gmail.com"
+    },
+    {
+      "id": "MSG-1749678527486602548",
+      "content": "asd",
+      "isClient": true,
+      "createdAt": "2025-06-11T21:48:47.486607268Z",
+      "userName": "Juan",
+      "userEmail": "juan@gmail.com"
+    }
+  ],
+  "userEmail": "juan@gmail.com",
+  "userName": "Juan",
+  "clientName": "Juan",
+  "clientEmail": "juan@gmail.com",
+  "widgetId": "demo-widget",
+  "department": "Soporte",
+  "metadata": {
+    "url": "http://localhost:4321/",
+    "referrer": "",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64; rv:139.0) Gecko/20100101 Firefox/139.0",
+    "screenSize": "2400x1140",
+    "externalId": ""
+  }
+}

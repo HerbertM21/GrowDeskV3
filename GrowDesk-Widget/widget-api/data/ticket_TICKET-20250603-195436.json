@@ -1,0 +1,34 @@
+{
+  "id": "TICKET-20250603-195436",
+  "title": "Ticket de prueba desde API",
+  "subject": "Ticket de prueba desde API",
+  "description": "Este es un mensaje de prueba desde la API directamente",
+  "status": "open",
+  "priority": "medium",
+  "createdBy": "",
+  "createdAt": "2025-06-03T19:54:36.209410358Z",
+  "updatedAt": "2025-06-03T19:54:36.209410358Z",
+  "messages": [
+    {
+      "id": "MSG-1748980476209414500",
+      "content": "Este es un mensaje de prueba desde la API directamente",
+      "isClient": true,
+      "createdAt": "2025-06-03T19:54:36.209410358Z",
+      "userName": "Usuario Test API",
+      "userEmail": "test-api@example.com"
+    }
+  ],
+  "userEmail": "test-api@example.com",
+  "userName": "Usuario Test API",
+  "clientName": "Usuario Test API",
+  "clientEmail": "test-api@example.com",
+  "widgetId": "",
+  "department": "soporte",
+  "metadata": {
+    "url": "",
+    "referrer": "",
+    "userAgent": "",
+    "screenSize": "",
+    "externalId": ""
+  }
+}

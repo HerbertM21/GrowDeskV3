@@ -1,0 +1,34 @@
+{
+  "id": "TICKET-20250603-195917",
+  "title": "Ticket FINAL TEST",
+  "subject": "Ticket FINAL TEST",
+  "description": "Mensaje final para probar la ruta corregida",
+  "status": "open",
+  "priority": "medium",
+  "createdBy": "",
+  "createdAt": "2025-06-03T19:59:17.818530259Z",
+  "updatedAt": "2025-06-03T19:59:17.818530259Z",
+  "messages": [
+    {
+      "id": "MSG-1748980757818535004",
+      "content": "Mensaje final para probar la ruta corregida",
+      "isClient": true,
+      "createdAt": "2025-06-03T19:59:17.818530259Z",
+      "userName": "Usuario FINAL",
+      "userEmail": "final@example.com"
+    }
+  ],
+  "userEmail": "final@example.com",
+  "userName": "Usuario FINAL",
+  "clientName": "Usuario FINAL",
+  "clientEmail": "final@example.com",
+  "widgetId": "",
+  "department": "soporte",
+  "metadata": {
+    "url": "",
+    "referrer": "",
+    "userAgent": "",
+    "screenSize": "",
+    "externalId": ""
+  }
+}

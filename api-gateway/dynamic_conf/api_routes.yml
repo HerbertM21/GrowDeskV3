@@ -1,0 +1,187 @@
+## Configuración de routing para API Gateway
+http:
+  routers:
+    # Router para el backend principal
+    backend-api:
+      rule: "Host(`localhost`) && PathPrefix(`/api`) && !PathPrefix(`/dashboard`) && !PathPrefix(`/api/version`) && !PathPrefix(`/api/entrypoints`) && !PathPrefix(`/api/overview`) && !PathPrefix(`/api/http`)"
+      service: "backend-service"
+      priority: 10
+      middlewares:
+        - "backend-cors"
+
+    # Router específico para WebSockets
+    websocket-router:
+      rule: "Host(`localhost`) && PathPrefix(`/api/ws`)"
+      service: "backend-service"
+      priority: 15
+      middlewares:
+        - "websocket-headers"
+
+    # Router directo al panel admin
+    admin-ui-router:
+      rule: "Host(`localhost`) && PathPrefix(`/admin`)"
+      middlewares:
+        - "redirect-admin"
+      service: "noop@internal"
+      priority: 30
+
+    # Router directo al widget api
+    widget-api-router:
+      rule: "Host(`localhost`) && PathPrefix(`/widget-api`)"
+      middlewares:
+        - "redirect-widget-api"
+      service: "noop@internal"
+      priority: 20
+
+    # Router para el widget core
+    widget-core:
+      rule: "PathPrefix(`/widget`)"
+      service: "widget-core-service"
+      middlewares:
+        - "widget-core-stripprefix"
+      priority: 40
+
+    # Router directo al demo site (con redirección a URL específica)
+    demo-site-router:
+      rule: "Host(`localhost`) && PathPrefix(`/demo`)"
+      middlewares:
+        - "redirect-demo-fixed"
+      service: "noop@internal"
+      priority: 50
+
+    # Router para el dashboard de Traefik
+    traefik-api:
+      rule: "PathPrefix(`/api/version`) || PathPrefix(`/api/entrypoints`) || PathPrefix(`/api/overview`) || PathPrefix(`/dashboard`) || PathPrefix(`/api/http`)"
+      service: "api@internal"
+      priority: 200
+
+  # Configuración de servicios
+  services:
+    backend-service:
+      loadBalancer:
+        servers:
+          - url: "http://growdesk-backend:8080"
+
+    widget-api-service:
+      loadBalancer:
+        servers:
+          - url: "http://growdesk-widget-api:3000"
+
+    frontend-service:
+      loadBalancer:
+        servers:
+          - url: "http://growdesk-frontend:3000"
+
+    widget-core-service:
+      loadBalancer:
+        servers:
+          - url: "http://growdesk-widget-core:3030"
+
+    demo-site-service:
+      loadBalancer:
+        servers:
+          - url: "http://growdesk-demo-site:8090"
+
+  # Middlewares para strip prefix y redirecciones
+  middlewares:
+    # Middleware específico para WebSockets
+    websocket-headers:
+      headers:
+        customResponseHeaders:
+          Connection: "Upgrade"
+          Upgrade: "websocket"
+        accessControlAllowOriginList:
+          - "http://localhost"
+          - "http://localhost:3001"
+          - "*"
+        accessControlAllowMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+        accessControlAllowHeaders:
+          - "*"
+        accessControlAllowCredentials: true
+
+    backend-cors:
+      headers:
+        accessControlAllowMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+        accessControlAllowOriginList:
+          - "http://localhost"
+          - "http://localhost:3001"
+          - "*"
+        accessControlAllowHeaders:
+          - "Content-Type"
+          - "Authorization"
+          - "X-Requested-With"
+          - "X-Widget-ID"
+          - "X-Widget-Token"
+        accessControlMaxAge: 100
+        addVaryHeader: true
+        accessControlAllowCredentials: true
+    
+    redirect-widget-api:
+      redirectScheme:
+        scheme: http
+        port: "3002"
+        permanent: false
+        
+    redirect-admin:
+      redirectScheme:
+        scheme: http
+        port: "3001"
+        permanent: false
+        
+    redirect-demo-simple:
+      redirectRegex:
+        regex: "^/demo.*"
+        replacement: "http://localhost:8091"
+        permanent: false
+        
+    redirect-demo-fixed:
+      redirectRegex:
+        regex: ".*"
+        replacement: "http://localhost:8091"
+        permanent: false
+
+    widget-api-stripprefix:
+      stripPrefix:
+        prefixes:
+          - "/widget-api"
+
+    admin-ui-stripprefix:
+      stripPrefix:
+        prefixes:
+          - "/admin"
+    
+    admin-ui-cors:
+      headers:
+        accessControlAllowMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+        accessControlAllowOriginList:
+          - "http://localhost"
+          - "http://localhost:3001"
+        accessControlAllowHeaders:
+          - "*"
+        accessControlMaxAge: 100
+        addVaryHeader: true
+
+    widget-core-stripprefix:
+      stripPrefix:
+        prefixes:
+          - "/widget"
+
+    demo-site-stripprefix:
+      stripPrefix:
+        prefixes:
+          - "/demo" 

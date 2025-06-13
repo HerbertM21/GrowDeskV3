@@ -1,0 +1,90 @@
+{
+  "id": "TICKET-20250612-164935",
+  "title": "Solicitud de soporte - Laura 2",
+  "subject": "Solicitud de soporte - Laura 2",
+  "description": "test",
+  "status": "open",
+  "priority": "medium",
+  "createdBy": "",
+  "createdAt": "2025-06-12T16:49:35.922682757Z",
+  "updatedAt": "2025-06-12T16:49:58Z",
+  "messages": [
+    {
+      "id": "MSG-1749746975922688821",
+      "content": "test",
+      "isClient": true,
+      "createdAt": "2025-06-12T16:49:35.922682757Z",
+      "userName": "Laura 2",
+      "userEmail": "admin@example.com"
+    },
+    {
+      "id": "MSG-1749746980049371941",
+      "content": "hols",
+      "isClient": true,
+      "createdAt": "2025-06-12T16:49:40.049378853Z",
+      "userName": "Laura 2",
+      "userEmail": "admin@example.com"
+    },
+    {
+      "id": "MSG-1749746980050931425",
+      "content": "hols",
+      "isClient": true,
+      "createdAt": "2025-06-12T16:49:40Z",
+      "userName": "Laura 2",
+      "userEmail": "admin@example.com"
+    },
+    {
+      "id": "MSG-1749746980052941301",
+      "content": "hols",
+      "isClient": true,
+      "createdAt": "2025-06-12T16:49:40Z",
+      "userName": "Laura 2",
+      "userEmail": "admin@example.com"
+    },
+    {
+      "id": "MSG-1749746991279942273",
+      "content": "a",
+      "isClient": false,
+      "createdAt": "2025-06-12T16:49:51Z",
+      "userName": "Agente",
+      "userEmail": ""
+    },
+    {
+      "id": "MSG-1749746998473512551",
+      "content": "aw",
+      "isClient": true,
+      "createdAt": "2025-06-12T16:49:58.473519319Z",
+      "userName": "Laura 2",
+      "userEmail": "admin@example.com"
+    },
+    {
+      "id": "MSG-1749746998476004722",
+      "content": "aw",
+      "isClient": true,
+      "createdAt": "2025-06-12T16:49:58Z",
+      "userName": "Laura 2",
+      "userEmail": "admin@example.com"
+    },
+    {
+      "id": "MSG-1749746998478958774",
+      "content": "aw",
+      "isClient": true,
+      "createdAt": "2025-06-12T16:49:58Z",
+      "userName": "Laura 2",
+      "userEmail": "admin@example.com"
+    }
+  ],
+  "userEmail": "admin@example.com",
+  "userName": "Laura 2",
+  "clientName": "Laura 2",
+  "clientEmail": "admin@example.com",
+  "widgetId": "",
+  "department": "",
+  "metadata": {
+    "url": "http://localhost:8091/",
+    "referrer": "",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+    "screenSize": "2133x1015",
+    "externalId": ""
+  }
+}

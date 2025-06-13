@@ -1,0 +1,34 @@
+{
+  "id": "TICKET-TEST-123",
+  "title": "Ticket desde backend",
+  "subject": "",
+  "description": "Este ticket fue creado automáticamente al recibir una notificación del backend.",
+  "status": "open",
+  "priority": "",
+  "createdBy": "",
+  "createdAt": "2025-06-07T18:56:00Z",
+  "updatedAt": "2025-06-07T18:56:00Z",
+  "messages": [
+    {
+      "id": "test-msg-123",
+      "content": "Mensaje de prueba desde backend",
+      "isClient": false,
+      "createdAt": "2025-06-07T18:56:00Z",
+      "userName": "Agente Prueba",
+      "userEmail": "agente@test.com"
+    }
+  ],
+  "userEmail": "agente@test.com",
+  "userName": "Agente Prueba",
+  "clientName": "",
+  "clientEmail": "",
+  "widgetId": "",
+  "department": "",
+  "metadata": {
+    "url": "",
+    "referrer": "",
+    "userAgent": "",
+    "screenSize": "",
+    "externalId": ""
+  }
+}
