@@ -1,12 +1,13 @@
-declare module 'primevue/primevue.esm.js' {
-  import PrimeVue from 'primevue/config';
-  export default PrimeVue;
-}
-
 declare module 'primevue/config' {
   import { Plugin } from 'vue';
   const PrimeVue: Plugin;
   export default PrimeVue;
+}
+
+declare module 'primevue/toastservice' {
+  import { Plugin } from 'vue';
+  const ToastService: Plugin;
+  export default ToastService;
 }
 
 declare module 'primevue/*' {

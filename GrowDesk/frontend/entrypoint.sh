@@ -36,7 +36,7 @@ if [ "$NODE_ENV" = "production" ]; then
     echo "ADVERTENCIA: No se encontró nginx.conf, usando configuración por defecto"
     cat > /etc/nginx/http.d/default.conf << 'EOF'
 server {
-    listen 80;
+    listen 3000;
     server_name _;
     root /app/dist;
     index index.html;

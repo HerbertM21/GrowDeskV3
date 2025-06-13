@@ -3,7 +3,7 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 
-// Importar PrimeVue
+// Importar PrimeVue directamente
 import PrimeVue from 'primevue/config'
 import ToastService from 'primevue/toastservice'
 import { setupPrimeVue } from './plugins/primevue'
@@ -12,12 +12,9 @@ import { setupPrimeVue } from './plugins/primevue'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 
-// Importar PrimeVue CSS
-import 'primevue/resources/themes/lara-light-blue/theme.css'
-import 'primeicons/primeicons.css'
-import 'primeflex/primeflex.css'
-
+// Importar estilos básicos
 import './assets/main.css'
+
 import { useUsersStore } from './stores/users'
 import { useAuthStore } from './stores/auth'
 

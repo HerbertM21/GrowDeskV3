@@ -1,6 +1,14 @@
 ## Configuración de routing para API Gateway
 http:
   routers:
+    # Router para la raíz (frontend)
+    frontend-router:
+      rule: "Host(`localhost`)"
+      service: "frontend-service"
+      priority: 1
+      middlewares:
+        - "admin-ui-cors"
+
     # Router para el backend principal
     backend-api:
       rule: "Host(`localhost`) && PathPrefix(`/api`) && !PathPrefix(`/dashboard`) && !PathPrefix(`/api/version`) && !PathPrefix(`/api/entrypoints`) && !PathPrefix(`/api/overview`) && !PathPrefix(`/api/http`)"

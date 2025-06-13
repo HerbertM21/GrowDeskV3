@@ -8,8 +8,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
-      // Resolver explícitamente los módulos de PrimeVue
-      'primevue': 'primevue/primevue.esm.js',
+      // Corregir los alias de PrimeVue
+      'primevue': 'primevue'
     },
     dedupe: ['vue']
   },
