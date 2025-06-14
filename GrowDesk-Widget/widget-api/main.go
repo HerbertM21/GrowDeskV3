@@ -1708,6 +1708,26 @@ func handleAgentMessage(c *gin.Context) {
 		agentName = "Soporte"
 	}
 
+	// Verificar si este mensaje ya existe en el ticket (para evitar duplicados)
+	// Comparamos el contenido y verificamos si fue enviado recientemente (últimos 5 segundos)
+	currentTime := time.Now()
+	fiveSecondsAgo := currentTime.Add(-5 * time.Second)
+
+	for _, existingMsg := range ticket.Messages {
+		// Si encontramos un mensaje con el mismo contenido enviado recientemente
+		if existingMsg.Content == req.Content && existingMsg.CreatedAt.After(fiveSecondsAgo) {
+			log.Printf("Mensaje duplicado detectado, ignorando: %s", req.Content)
+			// Devolver respuesta de éxito pero sin procesar el mensaje
+			c.JSON(http.StatusOK, gin.H{
+				"messageId": existingMsg.ID,
+				"message":   "Mensaje duplicado detectado, no se procesó",
+				"success":   true,
+				"duplicate": true,
+			})
+			return
+		}
+	}
+
 	// Crear nuevo mensaje (desde agente, no cliente)
 	newMessage := Message{
 		ID:        messageID,
@@ -1734,63 +1754,6 @@ func handleAgentMessage(c *gin.Context) {
 
 	// Enviar a todos los clientes conectados por WebSocket
 	sendMessageToWebSocketClients(req.TicketID, newMessage)
-
-	// Enviar mensaje al sistema principal GrowDesk
-	growDeskMessage := GrowDeskMessage{
-		TicketID:  req.TicketID,
-		Content:   req.Content,
-		IsClient:  false, // FALSE para mensajes de agente
-		UserID:    req.UserID,
-		UserName:  agentName,
-		UserEmail: "agent@growdesk.com",
-	}
-
-	// Serializar los datos a JSON
-	jsonData, err := json.Marshal(growDeskMessage)
-	if err != nil {
-		log.Printf("Error al serializar mensaje de agente para GrowDesk: %v", err)
-	} else {
-		// Obtener API URL
-		apiURL := os.Getenv("GROWDESK_API_URL")
-		apiKey := os.Getenv("GROWDESK_API_KEY")
-
-		if apiURL == "" {
-			apiURL = "http://localhost:8080"
-			log.Printf("GROWDESK_API_URL no definido, usando valor por defecto: %s", apiURL)
-		}
-
-		if apiKey == "" {
-			apiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiJhZG1pbi0xMjMiLCJlbWFpbCI6ImFkbWluQGdyb3dkZXNrLmNvbSIsInJvbGUiOiJhZG1pbiIsImV4cCI6MTcyNDA4ODQwMH0.8J5ayPvA4B-1vF5NaqRXycW1pmIl9qjKP6Ddj4Ot_Cw"
-		}
-
-		// Normalizar URL base
-		baseURL := strings.TrimSuffix(apiURL, "/")
-
-		// Construir URL para la API de mensajes
-		url := fmt.Sprintf("%s/widget/tickets/%s/messages?from_client=true", baseURL, req.TicketID)
-
-		log.Printf("Enviando mensaje al sistema GrowDesk en la URL: %s", url)
-
-		headers := map[string]string{
-			"Content-Type":       "application/json",
-			"Authorization":      "Bearer " + apiKey,
-			"X-Message-Source":   "widget-client",
-			"X-Widget-ID":        req.TicketID,
-			"X-Client-Message":   "true",
-			"X-Widget-Ticket-ID": req.TicketID,
-			"X-From-Client":      "true",
-		}
-
-		// Enviar con reintentos
-		resp, err := sendHttpRequestWithRetry(url, jsonData, headers, 3)
-		if err != nil {
-			log.Printf("Error al enviar mensaje a GrowDesk: %v", err)
-		} else if resp != nil {
-			body, _ := io.ReadAll(resp.Body)
-			resp.Body.Close()
-			log.Printf("Respuesta al enviar mensaje a GrowDesk: Status %d, Body: %s", resp.StatusCode, string(body))
-		}
-	}
 
 	// Devolver respuesta de éxito
 	c.JSON(http.StatusOK, gin.H{

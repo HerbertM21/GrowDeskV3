@@ -1,9 +1,16 @@
 package db
 
 import (
+	"bytes"
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"strings"
 	"sync"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/hmdev/GrowDeskV2/GrowDesk/backend/internal/data"
@@ -176,6 +183,81 @@ func (s *PostgreSQLStore) BroadcastMessage(ticketID string, message models.Messa
 				fmt.Printf("Error al enviar mensaje por WebSocket: %v\n", err)
 			}
 		}
+	}
+
+	// Notificar al widget-api sobre el nuevo mensaje
+	go s.notifyWidgetAPI(ticketID, message)
+}
+
+// notifyWidgetAPI envía una notificación HTTP al widget-api cuando hay un nuevo mensaje
+func (s *PostgreSQLStore) notifyWidgetAPI(ticketID string, message models.Message) {
+	// Obtener la URL del widget-api desde las variables de entorno
+	widgetAPIURL := os.Getenv("WIDGET_API_URL")
+	if widgetAPIURL == "" {
+		widgetAPIURL = "http://growdesk-widget-api:3000" // URL por defecto en Docker
+		fmt.Printf("WIDGET_API_URL no definida, usando valor por defecto: %s\n", widgetAPIURL)
+	}
+
+	// Normalizar URL
+	widgetAPIURL = strings.TrimSuffix(widgetAPIURL, "/")
+
+	// Construir URL para la API de mensajes de agente
+	url := fmt.Sprintf("%s/api/agent/messages", widgetAPIURL)
+
+	fmt.Printf("Notificando al widget-api sobre nuevo mensaje para ticket %s en URL: %s\n", ticketID, url)
+
+	// Crear estructura de mensaje para el widget-api
+	agentMessage := struct {
+		TicketID  string `json:"ticketId"`
+		Content   string `json:"content"`
+		UserID    string `json:"userId,omitempty"`
+		AgentName string `json:"agentName,omitempty"`
+	}{
+		TicketID:  ticketID,
+		Content:   message.Content,
+		UserID:    message.UserID,
+		AgentName: message.UserName,
+	}
+
+	// Convertir a JSON
+	jsonData, err := json.Marshal(agentMessage)
+	if err != nil {
+		fmt.Printf("Error al convertir mensaje a JSON para widget-api: %v\n", err)
+		return
+	}
+
+	// Crear solicitud HTTP
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	if err != nil {
+		fmt.Printf("Error al crear solicitud HTTP para widget-api: %v\n", err)
+		return
+	}
+
+	// Configurar cabeceras
+	req.Header.Set("Content-Type", "application/json")
+
+	// Crear cliente HTTP con timeout
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+	}
+
+	// Enviar solicitud
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Printf("Error al enviar notificación al widget-api: %v\n", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	// Leer respuesta
+	body, _ := io.ReadAll(resp.Body)
+
+	// Verificar código de respuesta
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		fmt.Printf("Notificación enviada correctamente al widget-api para ticket %s. Respuesta: %s\n", ticketID, string(body))
+	} else {
+		fmt.Printf("Error al enviar notificación al widget-api para ticket %s. Código: %d, Respuesta: %s\n",
+			ticketID, resp.StatusCode, string(body))
 	}
 }
 
