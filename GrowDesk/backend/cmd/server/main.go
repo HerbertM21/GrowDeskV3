@@ -213,6 +213,7 @@ func main() {
 
 	// Rutas de widget (públicas)
 	mux.HandleFunc("/widget/tickets", ticketHandler.CreateWidgetTicket)
+	mux.HandleFunc("/api/widget/tickets", ticketHandler.CreateWidgetTicket) // Ruta alternativa para el widget
 
 	// ÚNICO: Endpoint para que widget-api pueda enviar mensajes al backend
 	mux.HandleFunc("/widget/messages", func(w http.ResponseWriter, r *http.Request) {
@@ -225,22 +226,25 @@ func main() {
 		}
 	})
 
-	// Ruta para obtener mensajes de un ticket desde el widget (SOLO GET)
+	// Ruta para obtener mensajes de un ticket desde el widget
 	mux.HandleFunc("/widget/tickets/", func(w http.ResponseWriter, r *http.Request) {
 		// DEBUG: Log cuando esta ruta es llamada
 		fmt.Printf("🔥 WIDGET TICKETS ROUTE - URL: %s, Método: %s, Path: %s\n", r.URL.String(), r.Method, r.URL.Path)
 
 		path := r.URL.Path
-		if filepath.Base(path) == "messages" {
+		if strings.Contains(path, "/messages") {
 			fmt.Printf("📬 WIDGET MESSAGES - Detectada ruta de mensajes\n")
-			// SOLO manejar GET (obtener mensajes) - POST se maneja en /widget/messages
+			// Manejar tanto GET (obtener mensajes) como POST (añadir mensajes)
 			switch r.Method {
 			case http.MethodGet:
 				fmt.Printf("➡️ WIDGET GET: Llamando GetTicketMessages\n")
 				ticketHandler.GetTicketMessages(w, r)
+			case http.MethodPost:
+				fmt.Printf("➡️ WIDGET POST: Llamando AddTicketMessage\n")
+				ticketHandler.AddTicketMessage(w, r)
 			default:
 				fmt.Printf("❌ WIDGET: Método no permitido para esta ruta: %s\n", r.Method)
-				http.Error(w, "Método no permitido - usar /widget/messages para POST", http.StatusMethodNotAllowed)
+				http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
 			}
 		} else {
 			fmt.Printf("❌ WIDGET: No es ruta de mensajes, enviando 404\n")

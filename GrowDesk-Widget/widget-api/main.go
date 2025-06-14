@@ -1225,59 +1225,70 @@ func sendHttpRequestWithRetry(url string, jsonData []byte, headers map[string]st
 	var resp *http.Response
 	var lastErr error
 
-	for i := 0; i < maxRetries; i++ {
-		// Crear solicitud
-		req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
-		if err != nil {
-			log.Printf("Error al crear solicitud HTTP (intento %d): %v", i+1, err)
-			lastErr = err
-			continue
-		}
-
-		// Añadir cabeceras
-		for key, value := range headers {
-			req.Header.Set(key, value)
-		}
-
-		// Crear cliente con timeout
-		client := &http.Client{
-			Timeout: 30 * time.Second, // Aumentado de 10 a 30 segundos
-		}
-
-		// Enviar solicitud
-		resp, err = client.Do(req)
-		if err == nil && resp.StatusCode >= 200 && resp.StatusCode < 300 {
-			// Éxito
-			return resp, nil
-		}
-
-		if err != nil {
-			log.Printf("Error en intento %d: %v", i+1, err)
-			lastErr = err
-
-			// Intenta resolver problemas de DNS o hosts
-			if strings.Contains(err.Error(), "lookup backend") {
-				log.Printf("Error de resolución DNS detectado. Intentando con nombre completo 'growdesk-backend'")
-				if strings.Contains(url, "backend:") {
-					url = strings.Replace(url, "backend:", "growdesk-backend:", 1)
-					log.Printf("URL ajustada a: %s", url)
-				}
-			}
-		} else {
-			log.Printf("Respuesta no exitosa en intento %d: %d", i+1, resp.StatusCode)
-			bodyBytes, _ := ioutil.ReadAll(resp.Body)
-			log.Printf("Contenido de respuesta: %s", string(bodyBytes))
-			resp.Body.Close()
-			lastErr = fmt.Errorf("código de respuesta no exitoso: %d", resp.StatusCode)
-		}
-
-		// Esperar antes de reintentar (backoff exponencial)
-		waitTime := time.Duration(300*(i+1)) * time.Millisecond
-		log.Printf("Esperando %v antes del siguiente intento...", waitTime)
-		time.Sleep(waitTime)
+	// Intentar resolver problemas de DNS antes de comenzar
+	if strings.Contains(url, "localhost") {
+		// Reemplazar localhost con la dirección IP interna de Docker
+		url = strings.Replace(url, "localhost", "growdesk-backend", 1)
+		log.Printf("URL ajustada para Docker: %s", url)
 	}
 
-	return nil, fmt.Errorf("fallo después de %d intentos: %v", maxRetries, lastErr)
+	// Probar diferentes URLs si es necesario
+	alternativeURLs := []string{
+		url,
+		strings.Replace(url, "http://growdesk-backend", "http://backend", 1),
+		strings.Replace(url, "/widget/tickets", "/api/widget/tickets", 1),
+	}
+
+	log.Printf("Intentando enviar solicitud con las siguientes URLs alternativas: %v", alternativeURLs)
+
+	for _, currentURL := range alternativeURLs {
+		for i := 0; i < maxRetries; i++ {
+			// Crear solicitud
+			req, err := http.NewRequest("POST", currentURL, bytes.NewBuffer(jsonData))
+			if err != nil {
+				log.Printf("Error al crear solicitud HTTP para %s (intento %d): %v", currentURL, i+1, err)
+				lastErr = err
+				continue
+			}
+
+			// Añadir cabeceras
+			for key, value := range headers {
+				req.Header.Set(key, value)
+			}
+
+			// Crear cliente con timeout
+			client := &http.Client{
+				Timeout: 30 * time.Second, // Aumentado de 10 a 30 segundos
+			}
+
+			// Enviar solicitud
+			log.Printf("Enviando solicitud a %s (intento %d)...", currentURL, i+1)
+			resp, err = client.Do(req)
+			if err == nil && resp.StatusCode >= 200 && resp.StatusCode < 300 {
+				// Éxito
+				log.Printf("Solicitud exitosa a %s", currentURL)
+				return resp, nil
+			}
+
+			if err != nil {
+				log.Printf("Error en intento %d a %s: %v", i+1, currentURL, err)
+				lastErr = err
+			} else {
+				log.Printf("Respuesta no exitosa en intento %d a %s: %d", i+1, currentURL, resp.StatusCode)
+				bodyBytes, _ := ioutil.ReadAll(resp.Body)
+				log.Printf("Contenido de respuesta: %s", string(bodyBytes))
+				resp.Body.Close()
+				lastErr = fmt.Errorf("código de respuesta no exitoso: %d", resp.StatusCode)
+			}
+
+			// Esperar antes de reintentar (backoff exponencial)
+			waitTime := time.Duration(300*(i+1)) * time.Millisecond
+			log.Printf("Esperando %v antes del siguiente intento...", waitTime)
+			time.Sleep(waitTime)
+		}
+	}
+
+	return nil, fmt.Errorf("fallo después de probar múltiples URLs y %d intentos: %v", maxRetries, lastErr)
 }
 
 // handleWebSocketConnection maneja las conexiones WebSocket para chat en tiempo real

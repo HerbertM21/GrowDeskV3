@@ -74,7 +74,7 @@ services:
     environment:
       - PORT=8080
       - DATA_DIR=/app/data
-      - MOCK_AUTH=false
+      - MOCK_AUTH=true
       - DB_HOST=postgres
       - DB_PORT=5432
       - DB_USER=postgres

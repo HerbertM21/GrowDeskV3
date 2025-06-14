@@ -28,6 +28,58 @@
   /* Fuentes */
   --font-family-base: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   --font-family-headings: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+  /* Variables globales */
+  /* Colores primarios */
+  --primary-color: #3B82F6;
+  --primary-color-rgb: 59, 130, 246;
+  --primary-dark: #1D4ED8;
+  --primary-light: #DBEAFE;
+
+  /* Colores secundarios */
+  --secondary-color: #4F46E5;
+  --secondary-color-rgb: 79, 70, 229;
+  --secondary-dark: #4338CA;
+  --secondary-light: #E0E7FF;
+
+  /* Colores de éxito, advertencia y error */
+  --success-color: #10B981;
+  --success-color-rgb: 16, 185, 129;
+  --warning-color: #FBBF24;
+  --warning-color-rgb: 251, 191, 36;
+  --error-color: #EF4444;
+  --error-color-rgb: 239, 68, 68;
+  --info-color: #60A5FA;
+  --info-color-rgb: 96, 165, 250;
+
+  /* Colores de fondo */
+  --bg-primary: #F9FAFB;
+  --light-bg: #F3F4F6;
+  --footer-bg: #F3F4F6;
+
+  /* Colores de texto */
+  --text-primary: #1F2937;
+  --text-secondary: #4B5563;
+  --text-tertiary: #6B7280;
+  --text-light: #9CA3AF;
+
+  /* Colores de borde */
+  --border-color: #E5E7EB;
+  --border-color-focus: #93C5FD;
+
+  /* Radios de borde */
+  --border-radius: 8px;
+  --border-radius-sm: 4px;
+  --border-radius-lg: 12px;
+
+  /* Sombras */
+  --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+  /* Tipografía */
+  --font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 /* Tema oscuro */
@@ -322,4 +374,43 @@ h1, h2, h3, h4, h5, h6 {
   color: #721c24;
   background-color: #f8d7da;
   border-color: #f5c6cb;
+}
+
+/* Estilos para PrimeVue */
+.p-component {
+  font-family: var(--font-family);
+}
+
+.p-datatable .p-datatable-thead > tr > th {
+  background-color: var(--light-bg);
+  color: var(--text-secondary);
+  border-color: var(--border-color);
+}
+
+.p-button.p-button-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.p-button.p-button-primary:hover {
+  background-color: var(--primary-dark);
+  border-color: var(--primary-dark);
+}
+
+.p-dropdown {
+  width: 100%;
+}
+
+.p-card .p-card-content {
+  padding: 1.25rem;
+}
+
+/* Mensaje de error global */
+.error-message {
+  background-color: rgba(var(--error-color-rgb), 0.1);
+  color: var(--error-color);
+  padding: 0.75rem;
+  border-radius: var(--border-radius-sm);
+  margin-bottom: 1.5rem;
+  border-left: 3px solid var(--error-color);
 } 

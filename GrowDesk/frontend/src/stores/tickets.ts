@@ -165,35 +165,90 @@ export const useTicketStore = defineStore('tickets', {
       this.error = null
       
       try {
-        console.log('Comenzando fetchTickets - Llamando API...')
-        const response = await apiClient.get('/tickets')
-        console.log('Respuesta API fetchTickets:', response.data)
+        console.log('🔄 Comenzando fetchTickets - Llamando API...')
         
-        // Asegurarse de que this.tickets siempre sea un array
-        if (Array.isArray(response.data)) {
-        this.tickets = response.data
-        } else {
-          console.error('La respuesta no es un array:', response.data)
-          this.tickets = []
+        // Intentar primero obtener tickets del servicio
+        let apiTickets: Ticket[] = [];
+        try {
+          const response = await ticketService.getAllTickets();
+          console.log('✅ Respuesta API fetchTickets:', response);
+          apiTickets = response;
+        } catch (apiError) {
+          console.error('❌ Error al obtener tickets desde API:', apiError);
+          apiTickets = [];
         }
         
-        // Save to localStorage
-        saveTicketsToStorage(this.tickets)
+        // Cargar tickets guardados en localStorage
+        const savedTickets = loadTicketsFromStorage();
+        console.log(`📦 Tickets en localStorage: ${savedTickets.length}`);
+        
+        // Combinar tickets: priorizar datos del API pero mantener tickets locales que no existan en API
+        if (Array.isArray(apiTickets) && apiTickets.length > 0) {
+          console.log(`🔄 Combinando ${apiTickets.length} tickets de API con ${savedTickets.length} tickets locales`);
+          
+          // Crear un mapa de tickets del API por ID para búsqueda rápida
+          const apiTicketsMap = new Map();
+          apiTickets.forEach(ticket => {
+            apiTicketsMap.set(ticket.id, ticket);
+          });
+          
+          // Encontrar tickets locales que no existen en la respuesta de la API
+          const localOnlyTickets = savedTickets.filter(localTicket => 
+            !apiTicketsMap.has(localTicket.id)
+          );
+          
+          if (localOnlyTickets.length > 0) {
+            console.log(`⚠️ Encontrados ${localOnlyTickets.length} tickets solo en localStorage`);
+            
+            // Añadir tickets locales a la lista de la API
+            this.tickets = [...apiTickets, ...localOnlyTickets];
+          } else {
+            this.tickets = apiTickets;
+          }
+          
+          console.log(`📊 Total tickets después de combinar: ${this.tickets.length}`);
+        } else {
+          // Si no hay tickets de la API, usar los guardados localmente
+          console.log('⚠️ No hay tickets de API, usando tickets de localStorage');
+          this.tickets = savedTickets;
+        }
+        
+        // Guardar la lista combinada en localStorage
+        saveTicketsToStorage(this.tickets);
+        console.log('💾 Lista de tickets actualizada guardada en localStorage');
+        
+        // Forzar una segunda llamada al API para asegurar sincronización completa
+        setTimeout(async () => {
+          try {
+            console.log('🔄 Realizando segunda sincronización de tickets...');
+            const refreshResponse = await apiClient.get('/tickets');
+            
+            if (Array.isArray(refreshResponse.data) && refreshResponse.data.length > 0) {
+              // Actualizar solo si hay datos válidos
+              this.tickets = refreshResponse.data;
+              saveTicketsToStorage(this.tickets);
+              console.log('✅ Segunda sincronización completada, tickets actualizados');
+            }
+          } catch (refreshError) {
+            console.warn('⚠️ Error en segunda sincronización:', refreshError);
+          }
+        }, 2000);
+        
       } catch (error) {
-        console.error('Error fetching tickets:', error)
-        this.error = 'Error al cargar los tickets'
+        console.error('❌ Error general en fetchTickets:', error);
+        this.error = 'Error al cargar los tickets';
         
         // Si hay un error, intentar recuperar tickets almacenados localmente
-        const savedTickets = loadTicketsFromStorage()
+        const savedTickets = loadTicketsFromStorage();
         if (savedTickets && savedTickets.length > 0) {
-          console.log('Recuperando tickets de localStorage después de error de API')
-          this.tickets = savedTickets
+          console.log('🔄 Recuperando tickets de localStorage después de error de API');
+          this.tickets = savedTickets;
         } else {
           // Si no hay tickets guardados, inicializar como array vacío
-          this.tickets = []
+          this.tickets = [];
         }
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 

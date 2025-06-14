@@ -85,18 +85,10 @@ onMounted(async () => {
     document.documentElement.classList.remove('dark-theme');
   }
   
-  console.log('App.vue montado - verificando autenticación');
+  console.log('App.vue montado - verificando tema aplicado');
   
-  // Inicializar el estado de autenticación
-  try {
-    // Intentar verificar si hay una sesión válida
-    const isAuthSuccess = await authStore.checkAuth();
-    console.log('Verificación de autenticación completada:', isAuthSuccess ? 'sesión válida' : 'no autenticado');
-  } catch (error) {
-    console.error('Error durante la verificación de autenticación:', error);
-    // Limpiar datos de autenticación en caso de error
-    authStore.logout();
-  }
+  // La verificación de autenticación ahora se realiza en main.ts
+  // para evitar duplicar la operación
 });
 </script>
 

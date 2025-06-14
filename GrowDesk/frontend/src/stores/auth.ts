@@ -56,18 +56,45 @@ export const useAuthStore = defineStore('auth', () => {
   
   // Inicializar el estado desde localStorage
   const initFromStorage = () => {
+    console.log('Inicializando auth store desde localStorage');
+    
     const storedToken = localStorage.getItem('token')
     const storedUser = localStorage.getItem('user')
+    const storedUserId = localStorage.getItem('userId')
     
     if (storedToken) {
+      console.log('Token encontrado en localStorage');
       token.value = storedToken
+    } else {
+      console.log('No se encontró token en localStorage');
     }
     
     if (storedUser) {
       try {
         user.value = JSON.parse(storedUser)
+        console.log('Usuario cargado desde localStorage:', user.value);
+        
+        // Asegurar que el userId esté sincronizado
+        if (user.value && user.value.id && !storedUserId) {
+          localStorage.setItem('userId', user.value.id);
+          console.log('userId sincronizado en localStorage:', user.value.id);
+        }
       } catch (err) {
         console.error('Error parsing user from localStorage:', err)
+      }
+    } else if (storedUserId) {
+      // Si no hay usuario pero sí hay userId, crear un objeto mínimo
+      console.log('No hay objeto usuario completo pero sí userId:', storedUserId);
+      user.value = {
+        id: storedUserId,
+        email: 'usuario@example.com',
+        firstName: 'Usuario',
+        lastName: 'Actual',
+        role: 'employee',
+        department: null,
+        active: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       }
     }
   }
@@ -108,10 +135,40 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
   
+  // Registrar un nuevo usuario
+  async function register(userData: { firstName: string, lastName: string, email: string, password: string }) {
+    loading.value = true;
+    error.value = null;
+    
+    try {
+      // Usar el servicio de autenticación
+      const response = await authService.register(userData);
+      
+      // Guardamos el token y el usuario
+      token.value = response.token;
+      user.value = response.user;
+      
+      // Redirigir al dashboard
+      if (router) {
+        router.push('/dashboard');
+      }
+      
+      return true;
+    } catch (err) {
+      console.error('Error de registro:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Error durante el registro';
+      error.value = errorMessage;
+      return false;
+    } finally {
+      loading.value = false;
+    }
+  }
+  
   function logout() {
     // Eliminar token y userId del localStorage
     localStorage.removeItem('token');
     localStorage.removeItem('userId');
+    localStorage.removeItem('user');
     
     // Resetear el estado
     user.value = null;
@@ -136,10 +193,33 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       loading.value = true;
       
+      // Intentar cargar primero el usuario desde localStorage
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        try {
+          user.value = JSON.parse(storedUser);
+          console.log('Usuario cargado desde localStorage:', user.value);
+          return true;
+        } catch (err) {
+          console.error('Error al parsear usuario de localStorage:', err);
+          // No eliminar el token aquí, continuamos con el flujo normal
+        }
+      }
+      
       // Cargar el perfil de usuario
       const userId = localStorage.getItem('userId');
       if (!userId) {
-        throw new Error('No se pudo identificar al usuario');
+        console.warn('No se pudo identificar al usuario por ID');
+        // Intentar usar el ID del usuario actual si está disponible
+        if (user.value && user.value.id) {
+          localStorage.setItem('userId', user.value.id);
+          return true;
+        }
+        // Si no hay otra opción, entonces sí limpiamos
+        localStorage.removeItem('token');
+        token.value = null;
+        user.value = null;
+        return false;
       }
       
       // Usar el store de usuarios para cargar el perfil
@@ -165,7 +245,15 @@ export const useAuthStore = defineStore('auth', () => {
             return true;
           }
         }
-        throw new Error('Usuario no encontrado');
+        
+        // Si ya tenemos un usuario del localStorage, usar ese en lugar de limpiar
+        if (user.value) {
+          console.log('Usando usuario de localStorage como fallback');
+          return true;
+        }
+        
+        console.warn('Usuario no encontrado y no hay fallback');
+        return false;
       }
       
       // Actualizar el usuario
@@ -174,12 +262,14 @@ export const useAuthStore = defineStore('auth', () => {
       return true;
     } catch (err) {
       console.error('Error en checkAuth:', err);
-      // Si falla, limpiar token
-      localStorage.removeItem('token');
-      localStorage.removeItem('userId');
-      token.value = null;
-      user.value = null;
-      return false;
+      // No limpiar el token automáticamente si tenemos usuario en localStorage
+      if (!user.value) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('userId');
+        token.value = null;
+        user.value = null;
+      }
+      return !!user.value;
     } finally {
       loading.value = false;
     }
@@ -215,12 +305,28 @@ export const useAuthStore = defineStore('auth', () => {
     
     try {
       loading.value = true;
+      console.log('Obteniendo perfil de usuario actual');
       
-      // Por ahora, obtenemos el perfil desde el store de usuarios
+      // Intentar obtener el perfil desde la API
+      try {
+        const apiResponse = await authService.checkAuth();
+        if (apiResponse) {
+          user.value = apiResponse;
+          // Actualizar localStorage
+          localStorage.setItem('user', JSON.stringify(apiResponse));
+          localStorage.setItem('userId', apiResponse.id);
+          console.log('Perfil de usuario actualizado desde API:', apiResponse);
+          return apiResponse;
+        }
+      } catch (apiError) {
+        console.error('Error al obtener perfil desde API:', apiError);
+      }
+      
+      // Si falla la API, intentar obtener desde el store de usuarios
       const usersStore = useUsersStore();
       await usersStore.fetchUsers();
       
-      // debería decodificar el token o hacer una solicitud al backend
+      // Intentar obtener el ID de usuario
       const userId = localStorage.getItem('userId');
       if (!userId) {
         throw new Error('No se pudo identificar al usuario');
@@ -229,12 +335,22 @@ export const useAuthStore = defineStore('auth', () => {
       const foundUser = usersStore.users.find((u: User) => u.id.toString() === userId.toString());
       
       if (!foundUser) {
+        // Si no se encuentra en el store, intentar usar el usuario actual si existe
+        if (user.value) {
+          console.log('Usando el usuario actual como fallback');
+          return user.value;
+        }
+        
         throw new Error('Usuario no encontrado');
       }
       
       user.value = { ...foundUser };
+      // Actualizar localStorage
+      localStorage.setItem('user', JSON.stringify(foundUser));
+      console.log('Perfil de usuario actualizado desde store:', foundUser);
       return user.value;
     } catch (err) {
+      console.error('Error al cargar el perfil del usuario:', err);
       error.value = 'Error al cargar el perfil del usuario';
       return null;
     } finally {
@@ -267,6 +383,7 @@ export const useAuthStore = defineStore('auth', () => {
     checkAuth,
     updateProfile,
     setRouter,
-    fetchCurrentUserProfile
+    fetchCurrentUserProfile,
+    register
   }
 }) 

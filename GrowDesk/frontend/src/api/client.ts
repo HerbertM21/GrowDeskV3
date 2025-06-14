@@ -61,12 +61,10 @@ apiClient.interceptors.response.use(
 
     // Manejar errores de autenticación
     if (error.response.status === 401) {
-      const currentPath = window.location.pathname;
-      if (!currentPath.includes('/login')) {
-        localStorage.removeItem('token');
-        window.location.href = '/login';
-      }
-      return Promise.reject(new Error('Sesión expirada. Por favor, inicie sesión nuevamente.'));
+      // No redirigir automáticamente al login ni eliminar el token
+      // Esto permite que el authStore maneje la lógica de autenticación
+      console.warn('Error de autenticación 401 recibido');
+      return Promise.reject(new Error('Sesión expirada o credenciales inválidas'));
     }
 
     // Manejar errores de permisos

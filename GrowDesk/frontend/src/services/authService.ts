@@ -6,6 +6,13 @@ interface LoginCredentials {
   password: string;
 }
 
+interface RegisterData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+}
+
 interface AuthResponse {
   token: string;
   user: User;
@@ -47,6 +54,36 @@ export const authService = {
     }
   },
 
+  async register(userData: RegisterData): Promise<AuthResponse> {
+    try {
+      const response = await apiClient.post<AuthResponse>('/auth/register', userData);
+      
+      // Guardar datos importantes en localStorage
+      if (response.data && response.data.token) {
+        localStorage.setItem('token', response.data.token);
+        
+        if (response.data.user && response.data.user.id) {
+          localStorage.setItem('userId', String(response.data.user.id));
+        }
+        
+        if (response.data.user && response.data.user.role) {
+          localStorage.setItem('userRole', String(response.data.user.role));
+        }
+        
+        try {
+          localStorage.setItem('user', JSON.stringify(response.data.user));
+        } catch (e) {
+          console.warn('No se pudo guardar el objeto de usuario completo');
+        }
+      }
+      
+      return response.data;
+    } catch (error) {
+      console.error('Register error:', error);
+      throw error;
+    }
+  },
+
   async logout(): Promise<void> {
     try {
       await apiClient.post('/auth/logout');
@@ -78,6 +115,13 @@ export const authService = {
       // Actualizar datos del usuario si es necesario
       if (response.data && response.data.id) {
         localStorage.setItem('userId', String(response.data.id));
+        
+        // Actualizar el objeto de usuario completo
+        try {
+          localStorage.setItem('user', JSON.stringify(response.data));
+        } catch (e) {
+          console.warn('No se pudo guardar el objeto de usuario actualizado');
+        }
       }
       
       return response.data;

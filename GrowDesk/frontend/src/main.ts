@@ -12,20 +12,40 @@ import { setupPrimeVue } from './plugins/primevue'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 
+// Importar estilos de PrimeVue - Es necesario importarlos explícitamente
+import 'primevue/resources/themes/lara-light-blue/theme.css'  // tema
+import 'primevue/resources/primevue.min.css'                  // core css
+import 'primeicons/primeicons.css'                           // iconos
+import 'primeflex/primeflex.css'                             // utilidades CSS
+
 // Importar estilos básicos
 import './assets/main.css'
 
 import { useUsersStore } from './stores/users'
 import { useAuthStore } from './stores/auth'
 
+console.log('🚀 Iniciando aplicación GrowDesk...')
+console.log('📊 Entorno:', import.meta.env.MODE)
+console.log('🔌 API URL:', import.meta.env.VITE_API_URL || 'no configurada')
+console.log('🔄 SYNC API URL:', import.meta.env.VITE_SYNC_API_URL || 'no configurada')
+
+// Verificar estado de localStorage
+console.log('🔍 Verificando localStorage...')
+console.log('   - token:', localStorage.getItem('token') ? 'presente' : 'ausente')
+console.log('   - userId:', localStorage.getItem('userId') ? 'presente' : 'ausente')
+console.log('   - user:', localStorage.getItem('user') ? 'presente' : 'ausente')
+
 // Función para limpiar localStorage de datos corruptos
 const cleanLocalStorage = async () => {
   try {
     // Comprobar si es necesario limpiar basado en versión en archivo JSON
+    console.log('🧹 Intentando cargar localStorage-fix.json...')
     const response = await fetch('/localStorage-fix.json');
     if (response.ok) {
       const { id, version } = await response.json();
+      console.log(`✅ localStorage-fix.json cargado: id=${id}, version=${version}`)
       const lastCleanVersion = localStorage.getItem('localStorage-clean-version');
+      console.log(`   - Última versión de limpieza: ${lastCleanVersion || 'ninguna'}`)
       
       // Si la versión es nueva o no existe, limpiar y actualizar versión
       if (!lastCleanVersion || parseInt(lastCleanVersion) < version) {
@@ -47,10 +67,14 @@ const cleanLocalStorage = async () => {
         // Marcar que se completó la limpieza con esta versión
         localStorage.setItem('localStorage-clean-version', version.toString());
         console.log('Limpieza de localStorage completada');
+      } else {
+        console.log('   - No es necesario limpiar localStorage')
       }
+    } else {
+      console.warn('⚠️ No se pudo cargar localStorage-fix.json:', response.status)
     }
   } catch (err) {
-    console.error('Error al limpiar localStorage:', err);
+    console.error('❌ Error al limpiar localStorage:', err);
   }
 };
 
@@ -59,39 +83,65 @@ cleanLocalStorage().catch(err => console.error('Error en proceso de limpieza:', 
 
 // Crear app
 const app = createApp(App)
+console.log('📱 App Vue creada')
 
 // Configurar pinia
 const pinia = createPinia()
 app.use(pinia)
+console.log('📦 Pinia configurada')
 
 // Configurar router
 app.use(router)
+console.log('🧭 Router configurado')
 
 // Configurar PrimeVue
-app.use(PrimeVue, { ripple: true })
+app.use(PrimeVue, { 
+  ripple: true,
+  inputStyle: "filled"
+})
 app.use(ToastService)
 setupPrimeVue(app)
+console.log('🎨 PrimeVue configurado')
 
-// Inicializar stores con datos mock para desarrollo, pero NO iniciar sesión automáticamente
-if (import.meta.env.DEV) {
-  setTimeout(async () => {
-    // Inicializar usuarios mock para que estén disponibles para el login
-    const userStore = useUsersStore()
-    userStore.initMockUsers()
-    console.log('Usuarios mock inicializados desde main.ts (solo para login)')
+// Inicializar stores - tanto en desarrollo como en producción
+setTimeout(async () => {
+  try {
+    console.log('⏱️ Iniciando configuración de stores...')
+    
+    // Inicializar usuarios mock solo en modo desarrollo
+    if (import.meta.env.DEV) {
+      const userStore = useUsersStore()
+      userStore.initMockUsers()
+      console.log('👤 Usuarios mock inicializados desde main.ts (solo para login)')
+    }
     
     // Proporcionar el router al auth store
     const authStore = useAuthStore()
     authStore.setRouter(router)
-    console.log('Router proporcionado al auth store')
+    console.log('🔗 Router proporcionado al auth store')
     
-    // Solo comprobar si hay una sesión activa (token válido existente)
-    // pero NO forzar una autenticación
+    // Comprobar si hay una sesión activa (token válido existente)
+    console.log('🔐 Verificando estado de autenticación...')
     const isAuthenticated = await authStore.checkAuth()
-    console.log('App inicializada, estado de autenticación:', isAuthenticated ? 'autenticado' : 'no autenticado')
-  }, 100)
-}
+    console.log('🔓 App inicializada, estado de autenticación:', isAuthenticated ? 'autenticado' : 'no autenticado')
+    
+    // Si está autenticado, asegurarse de que el usuario tenga datos
+    if (isAuthenticated && !authStore.user) {
+      console.warn('⚠️ Usuario autenticado pero sin datos de usuario, intentando recuperar perfil...')
+      await authStore.fetchCurrentUserProfile()
+    }
+    
+    // Verificar estado final de autenticación
+    console.log('🔒 Estado final de autenticación:', {
+      isAuthenticated: authStore.isAuthenticated,
+      token: authStore.token ? 'presente' : 'ausente',
+      user: authStore.user ? `${authStore.user.firstName} ${authStore.user.lastName}` : 'ausente'
+    })
+  } catch (error) {
+    console.error('❌ Error durante la inicialización de la app:', error)
+  }
+}, 100)
 
 // Montar app
 app.mount('#app')
-console.log('App montada, estado de autenticación: no autenticado')
+console.log('🏁 App montada, estado autenticación pendiente de verificación')

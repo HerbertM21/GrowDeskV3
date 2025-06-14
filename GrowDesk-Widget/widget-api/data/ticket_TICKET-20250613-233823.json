@@ -1,0 +1,42 @@
+{
+  "id": "TICKET-20250613-233823",
+  "title": "Solicitud de soporte - Juan Lopez",
+  "subject": "Solicitud de soporte - Juan Lopez",
+  "description": "test",
+  "status": "open",
+  "priority": "",
+  "createdBy": "",
+  "createdAt": "2025-06-13T23:38:23.572886491Z",
+  "updatedAt": "2025-06-13T23:38:25.970013092Z",
+  "messages": [
+    {
+      "id": "MSG-1749857903572894033",
+      "content": "test",
+      "isClient": true,
+      "createdAt": "2025-06-13T23:38:23.572886491Z",
+      "userName": "Juan Lopez",
+      "userEmail": "herbertmm12@gmail.com"
+    },
+    {
+      "id": "MSG-1749857905969988125",
+      "content": "a",
+      "isClient": true,
+      "createdAt": "2025-06-13T23:38:25.970012185Z",
+      "userName": "Juan Lopez",
+      "userEmail": "herbertmm12@gmail.com"
+    }
+  ],
+  "userEmail": "herbertmm12@gmail.com",
+  "userName": "Juan Lopez",
+  "clientName": "Juan Lopez",
+  "clientEmail": "herbertmm12@gmail.com",
+  "widgetId": "",
+  "department": "",
+  "metadata": {
+    "url": "http://localhost:4321/",
+    "referrer": "",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+    "screenSize": "2133x1015",
+    "externalId": ""
+  }
+}

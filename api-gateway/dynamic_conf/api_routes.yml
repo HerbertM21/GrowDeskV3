@@ -43,11 +43,27 @@ http:
 
     # Router para el widget core
     widget-core:
-      rule: "PathPrefix(`/widget`)"
+      rule: "PathPrefix(`/widget`) && !PathPrefix(`/widget/tickets`)"
       service: "widget-core-service"
       middlewares:
         - "widget-core-stripprefix"
       priority: 40
+      
+    # Router específico para el endpoint del widget
+    widget-backend-router:
+      rule: "Host(`localhost`) && PathPrefix(`/widget/tickets`)"
+      service: "backend-service"
+      priority: 45
+      middlewares:
+        - "backend-cors"
+        
+    # Router específico para API widget (alternativo)
+    api-widget-backend-router:
+      rule: "Host(`localhost`) && PathPrefix(`/api/widget/tickets`)"
+      service: "backend-service"
+      priority: 46
+      middlewares:
+        - "backend-cors"
 
     # Router directo al demo site (con redirección a URL específica)
     demo-site-router:
@@ -123,6 +139,7 @@ http:
         accessControlAllowOriginList:
           - "http://localhost"
           - "http://localhost:3001"
+          - "http://localhost:8091"
           - "*"
         accessControlAllowHeaders:
           - "Content-Type"
@@ -130,6 +147,8 @@ http:
           - "X-Requested-With"
           - "X-Widget-ID"
           - "X-Widget-Token"
+          - "X-Source"
+          - "X-Client-Created"
         accessControlMaxAge: 100
         addVaryHeader: true
         accessControlAllowCredentials: true

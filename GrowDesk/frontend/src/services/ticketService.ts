@@ -17,179 +17,120 @@ const ticketService = {
 
   async getAllTickets(): Promise<Ticket[]> {
     try {
+      console.log('📡 Llamando API para obtener todos los tickets');
       const response = await apiClient.get('/tickets');
-      if (!response.data || !Array.isArray(response.data) || response.data.length === 0) {
-        console.log('Sin tickets en la respuesta de la API, usando datos de emergencia');
-        // Datos de emergencia para asegurar que al menos el ticket TICKET-20250327041753 aparezca
-        return [{
-          id: 'TICKET-20250327041753',
-          title: 'Problema al cargar los tickets de usuario',
-          description: 'Los tickets asignados no aparecen en la interfaz de usuario',
-          status: 'open',
-          priority: 'HIGH',
-          category: 'Bug',
-          createdBy: '2',
-          assignedTo: localStorage.getItem('userId') || '', 
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        }];
+      
+      if (!response.data) {
+        console.error('❌ La respuesta de la API no contiene datos');
+        return [];
       }
+      
+      if (!Array.isArray(response.data)) {
+        console.error('❌ La respuesta de la API no es un array:', response.data);
+        return [];
+      }
+      
+      console.log(`✅ Obtenidos ${response.data.length} tickets del servidor`);
       return response.data;
     } catch (error) {
-      console.error('Error fetching tickets:', error);
-      // En caso de error, asegurar que el ticket importante esté disponible
-      return [{
-        id: 'TICKET-20250327041753',
-        title: 'Problema al cargar los tickets de usuario',
-        description: 'Los tickets asignados no aparecen en la interfaz de usuario',
-        status: 'open',
-        priority: 'HIGH',
-        category: 'Bug',
-        createdBy: '2',
-        assignedTo: localStorage.getItem('userId') || '', 
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }];
+      console.error('❌ Error al obtener tickets:', error);
+      return [];
     }
   },
-
 
   async getUserTickets(userId: string): Promise<Ticket[]> {
     try {
-      console.log(`Obteniendo tickets para el usuario ${userId} usando el servicio de tickets`);
+      console.log(`📡 Obteniendo tickets para el usuario ${userId}`);
       const response = await apiClient.get(`/tickets/user/${userId}`);
       
-      if (!response.data || !Array.isArray(response.data) || response.data.length === 0) {
-        console.warn('Sin respuesta válida de la API para tickets del usuario, usando datos de emergencia');
-        // Asegurar que el ticket requerido por el usuario aparezca
-        return [{
-          id: 'TICKET-20250327041753',
-          title: 'Problema al cargar los tickets de usuario',
-          description: 'Los tickets asignados no aparecen en la interfaz de usuario',
-          status: 'open',
-          priority: 'HIGH',
-          category: 'Bug',
-          createdBy: '2',
-          assignedTo: userId,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        }];
+      if (!response.data || !Array.isArray(response.data)) {
+        console.warn('⚠️ Sin respuesta válida de la API para tickets del usuario');
+        return [];
       }
       
+      console.log(`✅ Obtenidos ${response.data.length} tickets para el usuario ${userId}`);
       return response.data;
     } catch (error) {
-      console.error(`Error fetching tickets for user ${userId}:`, error);
-      // En caso de error, asegurar que el ticket importante esté disponible
-      return [{
-        id: 'TICKET-20250327041753',
-        title: 'Problema al cargar los tickets de usuario',
-        description: 'Los tickets asignados no aparecen en la interfaz de usuario',
-        status: 'open',
-        priority: 'HIGH',
-        category: 'Bug',
-        createdBy: '2',
-        assignedTo: userId,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }];
+      console.error(`❌ Error al obtener tickets del usuario ${userId}:`, error);
+      return [];
     }
   },
 
-
   async getTicket(id: string): Promise<Ticket> {
     try {
-      console.log(`Obteniendo ticket con ID: ${id}`);
-      // Si el ticket solicitado es específicamente el que mencionó el usuario
-      if (id === 'TICKET-20250327041753') {
-        console.log('Proporcionando el ticket específico solicitado por el usuario');
-        return {
-          id: 'TICKET-20250327041753',
-          title: 'Problema al cargar los tickets de usuario',
-          description: 'Los tickets asignados no aparecen en la interfaz de usuario',
-          status: 'open',
-          priority: 'HIGH',
-          category: 'Bug',
-          createdBy: '2',
-          assignedTo: localStorage.getItem('userId') || '',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        };
+      console.log(`📡 Obteniendo ticket con ID: ${id}`);
+      const response = await apiClient.get(`/tickets/${id}`);
+      
+      if (!response.data) {
+        throw new Error(`No se encontró el ticket con ID ${id}`);
       }
       
-      const response = await apiClient.get(`/tickets/${id}`);
+      console.log(`✅ Ticket ${id} obtenido correctamente`);
       return response.data;
     } catch (error) {
-      console.error(`Error fetching ticket ${id}:`, error);
-      // Si el ticket solicitado es el específico, devolverlo incluso si hay un error
-      if (id === 'TICKET-20250327041753') {
-        return {
-          id: 'TICKET-20250327041753',
-          title: 'Problema al cargar los tickets de usuario',
-          description: 'Los tickets asignados no aparecen en la interfaz de usuario',
-          status: 'open',
-          priority: 'HIGH',
-          category: 'Bug',
-          createdBy: '2',
-          assignedTo: localStorage.getItem('userId') || '',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        };
-      }
+      console.error(`❌ Error al obtener ticket ${id}:`, error);
       throw error;
     }
   },
 
   async createTicket(ticketData: TicketCreateData): Promise<Ticket> {
     try {
+      console.log('📡 Creando nuevo ticket:', ticketData);
       const response = await apiClient.post('/tickets', ticketData);
+      console.log('✅ Ticket creado correctamente:', response.data);
       return response.data;
     } catch (error) {
-      console.error('Error creating ticket:', error);
+      console.error('❌ Error al crear ticket:', error);
       throw error;
     }
   },
 
   async updateTicket(id: string, ticketData: TicketUpdateData): Promise<Ticket> {
     try {
+      console.log(`📡 Actualizando ticket ${id}:`, ticketData);
       const response = await apiClient.put(`/tickets/${id}`, ticketData);
+      console.log(`✅ Ticket ${id} actualizado correctamente:`, response.data);
       return response.data;
     } catch (error) {
-      console.error(`Error updating ticket ${id}:`, error);
+      console.error(`❌ Error al actualizar ticket ${id}:`, error);
       throw error;
     }
   },
 
   async deleteTicket(id: string): Promise<void> {
     try {
+      console.log(`📡 Eliminando ticket ${id}`);
       await apiClient.delete(`/tickets/${id}`);
+      console.log(`✅ Ticket ${id} eliminado correctamente`);
     } catch (error) {
-      console.error(`Error deleting ticket ${id}:`, error);
+      console.error(`❌ Error al eliminar ticket ${id}:`, error);
       throw error;
     }
   },
 
-
   async assignTicket(id: string, userId: string): Promise<Ticket> {
     try {
-      // Usar POST como en el backend (AcceptTicket maneja POST)
+      console.log(`📡 Asignando ticket ${id} al usuario ${userId}`);
       const response = await apiClient.post(`/tickets/${id}/assign`, { 
         assignedTo: userId,
         status: 'assigned'
       });
+      console.log(`✅ Ticket ${id} asignado correctamente al usuario ${userId}`);
       return response.data;
     } catch (error) {
-      console.error(`Error assigning ticket ${id} to user ${userId}:`, error);
+      console.error(`❌ Error al asignar ticket ${id} al usuario ${userId}:`, error);
       throw error;
     }
   },
 
-
   async updateTicketStatus(id: string, status: Ticket['status']): Promise<Ticket> {
     try {
+      console.log(`📡 Actualizando estado del ticket ${id} a ${status}`);
       const response = await apiClient.put(`/tickets/${id}/status`, { status });
+      console.log(`✅ Estado del ticket ${id} actualizado correctamente a ${status}`);
       return response.data;
     } catch (error) {
-      console.error(`Error updating status for ticket ${id}:`, error);
+      console.error(`❌ Error al actualizar estado del ticket ${id}:`, error);
       throw error;
     }
   }

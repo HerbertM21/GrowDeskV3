@@ -1,0 +1,34 @@
+{
+  "id": "TICKET-20250613-232548",
+  "title": "Solicitud de soporte - Herbert2",
+  "subject": "Solicitud de soporte - Herbert2",
+  "description": "test2",
+  "status": "open",
+  "priority": "",
+  "createdBy": "",
+  "createdAt": "2025-06-13T23:25:48.416272082Z",
+  "updatedAt": "2025-06-13T23:25:48.416272082Z",
+  "messages": [
+    {
+      "id": "MSG-1749857148416346089",
+      "content": "test2",
+      "isClient": true,
+      "createdAt": "2025-06-13T23:25:48.416272082Z",
+      "userName": "Herbert2",
+      "userEmail": "herbert.mayorga.jbs@gmail.com"
+    }
+  ],
+  "userEmail": "herbert.mayorga.jbs@gmail.com",
+  "userName": "Herbert2",
+  "clientName": "Herbert2",
+  "clientEmail": "herbert.mayorga.jbs@gmail.com",
+  "widgetId": "",
+  "department": "",
+  "metadata": {
+    "url": "http://localhost:4321/",
+    "referrer": "",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+    "screenSize": "2133x1015",
+    "externalId": ""
+  }
+}

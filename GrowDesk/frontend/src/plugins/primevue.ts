@@ -11,6 +11,18 @@ import ColumnGroup from 'primevue/columngroup'
 import InputSwitch from 'primevue/inputswitch'
 import Checkbox from 'primevue/checkbox'
 import Calendar from 'primevue/calendar'
+import Menu from 'primevue/menu'
+import Menubar from 'primevue/menubar'
+import TabView from 'primevue/tabview'
+import TabPanel from 'primevue/tabpanel'
+import Panel from 'primevue/panel'
+import Textarea from 'primevue/textarea'
+import Badge from 'primevue/badge'
+import Avatar from 'primevue/avatar'
+import Divider from 'primevue/divider'
+import Message from 'primevue/message'
+import Tooltip from 'primevue/tooltip'
+import ProgressSpinner from 'primevue/progressspinner'
 
 // Función para instalar PrimeVue en la aplicación
 export function setupPrimeVue(app: any) {
@@ -27,8 +39,20 @@ export function setupPrimeVue(app: any) {
   app.component('PrimeInputSwitch', InputSwitch)
   app.component('PrimeCheckbox', Checkbox)
   app.component('PrimeCalendar', Calendar)
+  app.component('PrimeMenu', Menu)
+  app.component('PrimeMenubar', Menubar)
+  app.component('PrimeTabView', TabView)
+  app.component('PrimeTabPanel', TabPanel)
+  app.component('PrimePanel', Panel)
+  app.component('PrimeTextarea', Textarea)
+  app.component('PrimeBadge', Badge)
+  app.component('PrimeAvatar', Avatar)
+  app.component('PrimeDivider', Divider)
+  app.component('PrimeMessage', Message)
+  app.component('PrimeProgressSpinner', ProgressSpinner)
   
-  // ToastService ya se registra en main.ts
+  // Directivas
+  app.directive('tooltip', Tooltip)
   
-  console.log('PrimeVue 4.3.5 configurado correctamente')
+  console.log('PrimeVue 4.3.5 configurado correctamente con componentes adicionales')
 } 

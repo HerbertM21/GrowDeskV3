@@ -325,9 +325,19 @@ func (h *TicketHandler) AddTicketMessage(w http.ResponseWriter, r *http.Request)
 
 // CreateWidgetTicket crea un nuevo ticket desde el widget
 func (h *TicketHandler) CreateWidgetTicket(w http.ResponseWriter, r *http.Request) {
+	// Importante: esta ruta es pública y no requiere autenticación
+	// Se usa para recibir tickets desde el widget de soporte
+	// Esta función se puede llamar desde:
+	// - /widget/tickets (ruta original)
+	// - /api/widget/tickets (ruta alternativa)
+
+	fmt.Println("=== RECIBIENDO TICKET DESDE WIDGET ===")
+	fmt.Printf("URL: %s\n", r.URL.Path)
+	fmt.Printf("Headers: %v\n", r.Header)
+
 	// Solo maneja solicitudes POST
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
 		return
 	}
 
@@ -456,15 +466,48 @@ func (h *TicketHandler) CreateWidgetTicket(w http.ResponseWriter, r *http.Reques
 		fmt.Printf("Se encontró usuario existente con email %s, ID: %s\n", email, userID)
 	} else {
 		fmt.Printf("No se encontró usuario con email %s, error: %v\n", email, userErr)
-		// No hay usuario existente con este email, verificamos el usuario del sistema
-		systemUser, sysErr := h.Store.GetUserByEmail("admin@growdesk.com")
-		if sysErr == nil && systemUser != nil {
-			userID = systemUser.ID
-			fmt.Printf("Usando usuario del sistema con ID: %s\n", userID)
+		// No hay usuario existente con este email, creamos uno nuevo
+		newUserID := "user-" + utils.GenerateTimestamp()
+		newUser := models.User{
+			ID:        newUserID,
+			Email:     email,
+			FirstName: name,
+			LastName:  "",
+			Password:  "widget-generated-password", // Contraseña temporal
+			Role:      "customer",
+			Active:    true,
+		}
+
+		// Intentar crear el usuario
+		createErr := h.Store.CreateUser(newUser)
+		if createErr != nil {
+			fmt.Printf("Error al crear usuario para el widget: %v\n", createErr)
+			// Si falla la creación, usamos el usuario admin como fallback
+			adminUser, adminErr := h.Store.GetUserByEmail("admin@growdesk.com")
+			if adminErr == nil && adminUser != nil {
+				userID = adminUser.ID
+				fmt.Printf("Usando usuario admin con ID: %s como fallback\n", userID)
+			} else {
+				// Si no podemos obtener el usuario admin, creamos uno de emergencia
+				emergencyUserID := "admin-emergency"
+				emergencyUser := models.User{
+					ID:        emergencyUserID,
+					Email:     "emergency@growdesk.com",
+					FirstName: "Emergency",
+					LastName:  "User",
+					Password:  "emergency-password",
+					Role:      "admin",
+					Active:    true,
+				}
+
+				h.Store.CreateUser(emergencyUser)
+				userID = emergencyUserID
+				fmt.Printf("Creado usuario de emergencia con ID: %s\n", userID)
+			}
 		} else {
-			fmt.Printf("No se encontró usuario del sistema. Error: %v\n", sysErr)
-			// Crear un ticket sin UserID para evitar violación de clave foránea
-			fmt.Printf("Creando ticket sin UserID para evitar restricciones de clave foránea\n")
+			// Usuario creado exitosamente
+			userID = newUserID
+			fmt.Printf("Usuario creado exitosamente con ID: %s\n", userID)
 		}
 	}
 
@@ -482,8 +525,9 @@ func (h *TicketHandler) CreateWidgetTicket(w http.ResponseWriter, r *http.Reques
 		Department:  widgetRequest.Department,
 		// Solo usar UserID si tenemos uno válido
 		UserID: userID,
-		// Para tickets del widget, CreatedBy es el email del cliente
-		CreatedBy: email,
+		// IMPORTANTE: Asegurarse de que siempre tenga un valor válido
+		// Usar el ID del usuario específico para el widget
+		CreatedBy: "widget-system", // Usuario específico para el widget
 		Source:    widgetRequest.Source,
 		WidgetID:  widgetRequest.WidgetID,
 		Customer: models.Customer{

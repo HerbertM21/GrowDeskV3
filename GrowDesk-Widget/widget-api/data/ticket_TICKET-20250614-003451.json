@@ -1,0 +1,42 @@
+{
+  "id": "TICKET-20250614-003451",
+  "title": "Solicitud de soporte - Andrés Mayorgaa",
+  "subject": "Solicitud de soporte - Andrés Mayorgaa",
+  "description": "test2",
+  "status": "open",
+  "priority": "",
+  "createdBy": "",
+  "createdAt": "2025-06-14T00:34:51.125277939Z",
+  "updatedAt": "2025-06-14T00:34:53.694392839Z",
+  "messages": [
+    {
+      "id": "MSG-1749861291125282808",
+      "content": "test2",
+      "isClient": true,
+      "createdAt": "2025-06-14T00:34:51.125277939Z",
+      "userName": "Andrés Mayorgaa",
+      "userEmail": "test@test.com"
+    },
+    {
+      "id": "MSG-1749861293694349754",
+      "content": "a",
+      "isClient": true,
+      "createdAt": "2025-06-14T00:34:53.694391454Z",
+      "userName": "Andr\ufffds Mayorgaa",
+      "userEmail": "test@test.com"
+    }
+  ],
+  "userEmail": "test@test.com",
+  "userName": "Andrés Mayorgaa",
+  "clientName": "Andrés Mayorgaa",
+  "clientEmail": "test@test.com",
+  "widgetId": "",
+  "department": "",
+  "metadata": {
+    "url": "http://localhost:4321/",
+    "referrer": "",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+    "screenSize": "2133x1015",
+    "externalId": ""
+  }
+}
