@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -9,7 +10,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -18,6 +19,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/websocket"
 	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 )
 
 // Estructuras para los mensajes y tickets
@@ -158,6 +160,9 @@ var upgrader = websocket.Upgrader{
 var wsConnections = make(map[string][]*websocket.Conn)
 var wsConnectionsMutex = sync.Mutex{}
 
+// Conexión global a la base de datos
+var db *sql.DB
+
 // Estructura para mensajes WebSocket
 type WebSocketMessage struct {
 	Type     string      `json:"type"`
@@ -182,6 +187,73 @@ type TicketData struct {
 		Referrer   string `json:"referrer"`
 		ScreenSize string `json:"screenSize"`
 	} `json:"metadata"`
+}
+
+// connectDB abre una conexión a PostgreSQL usando variables de entorno
+func connectDB() (*sql.DB, error) {
+	host := getEnv("DB_HOST", "localhost")
+	port := getEnv("DB_PORT", "5432")
+	user := getEnv("DB_USER", "postgres")
+	password := getEnv("DB_PASSWORD", "postgres")
+	name := getEnv("DB_NAME", "growdesk")
+	sslmode := getEnv("DB_SSLMODE", "disable")
+
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", host, port, user, password, name, sslmode)
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		return nil, err
+	}
+	if err := db.Ping(); err != nil {
+		return nil, err
+	}
+	return db, nil
+}
+
+// initSchema ejecuta el archivo schema.sql para crear tablas si no existen
+func initSchema(db *sql.DB) error {
+	schemaPath := "schema.sql"
+	content, err := os.ReadFile(schemaPath)
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec(string(content))
+	return err
+}
+
+// migrateFromJSON guarda en la base de datos los tickets existentes en archivos JSON
+func migrateFromJSON(dir string) {
+	files, err := filepath.Glob(filepath.Join(dir, "ticket_*.json"))
+	if err != nil {
+		log.Printf("error leyendo archivos de tickets: %v", err)
+		return
+	}
+	log.Printf("Encontrados %d archivos de tickets para migrar", len(files))
+	for _, f := range files {
+		data, err := os.ReadFile(f)
+		if err != nil {
+			log.Printf("error leyendo %s: %v", f, err)
+			continue
+		}
+		var t Ticket
+		if err := json.Unmarshal(data, &t); err != nil {
+			log.Printf("error parseando %s: %v", f, err)
+			continue
+		}
+		if err := SaveTicket(t); err != nil {
+			log.Printf("error migrando ticket %s: %v", t.ID, err)
+		} else {
+			log.Printf("Ticket %s migrado correctamente a la base de datos", t.ID)
+		}
+	}
+}
+
+// getEnv devuelve la variable de entorno o un valor por defecto
+func getEnv(key, def string) string {
+	val := os.Getenv(key)
+	if val == "" {
+		return def
+	}
+	return val
 }
 
 // GetUserInfo extrae información de usuario de los headers o el cuerpo de la solicitud
@@ -214,6 +286,20 @@ func main() {
 
 	// Crear directorio de datos si no existe
 	os.MkdirAll("data", 0755)
+
+	// Conectar a la base de datos y preparar el esquema
+	db, err = connectDB()
+	if err != nil {
+		log.Fatalf("error conectando a la base de datos: %v", err)
+	}
+	if err := initSchema(db); err != nil {
+		log.Fatalf("error inicializando esquema: %v", err)
+	}
+	defer db.Close()
+
+	if strings.ToLower(os.Getenv("MIGRATE_DATA")) == "true" {
+		migrateFromJSON("data")
+	}
 
 	// Configuración del router con CORS habilitado
 	router := gin.Default()
@@ -550,49 +636,51 @@ func generateEmbedCode(widgetId, widgetToken, brandName, welcomeMessage, primary
 </script>`
 }
 
-// SaveTicket guarda un ticket en el almacenamiento local
+// SaveTicket guarda o actualiza un ticket en la base de datos
 func SaveTicket(ticket Ticket) error {
-	// Verificar si el directorio data existe
-	if _, err := os.Stat("data"); os.IsNotExist(err) {
-		log.Printf("El directorio data no existe, creándolo...")
-		if err := os.Mkdir("data", 0755); err != nil {
-			log.Printf("Error al crear directorio data: %v", err)
+	if db == nil {
+		return fmt.Errorf("database not initialized")
+	}
+
+	if ticket.CreatedAt.IsZero() {
+		ticket.CreatedAt = time.Now()
+	}
+	ticket.UpdatedAt = time.Now()
+
+	_, err := db.Exec(`
+                INSERT INTO widget_tickets_api (
+                        ticket_id, title, subject, description, status, priority,
+                        client_name, client_email, widget_id, department, created_at, updated_at
+                ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+                ON CONFLICT (ticket_id) DO UPDATE SET
+                        title=EXCLUDED.title,
+                        subject=EXCLUDED.subject,
+                        description=EXCLUDED.description,
+                        status=EXCLUDED.status,
+                        priority=EXCLUDED.priority,
+                        client_name=EXCLUDED.client_name,
+                        client_email=EXCLUDED.client_email,
+                        widget_id=EXCLUDED.widget_id,
+                        department=EXCLUDED.department,
+                        updated_at=EXCLUDED.updated_at
+        `, ticket.ID, ticket.Title, ticket.Subject, ticket.Description, ticket.Status,
+		ticket.Priority, ticket.ClientName, ticket.ClientEmail, ticket.WidgetID,
+		ticket.Department, ticket.CreatedAt, ticket.UpdatedAt)
+
+	if err != nil {
+		return err
+	}
+
+	for _, m := range ticket.Messages {
+		_, err := db.Exec(`
+                        INSERT INTO widget_messages_api (
+                                id, ticket_id, content, is_client, user_name, user_email, created_at
+                        ) VALUES ($1,$2,$3,$4,$5,$6,$7)
+                        ON CONFLICT (id) DO NOTHING
+                `, m.ID, ticket.ID, m.Content, m.IsClient, m.UserName, m.UserEmail, m.CreatedAt)
+		if err != nil {
 			return err
 		}
-	}
-
-	// Serializar ticket a JSON con indentación
-	data, err := json.MarshalIndent(ticket, "", "  ")
-	if err != nil {
-		log.Printf("Error al serializar ticket a JSON: %v", err)
-		return err
-	}
-
-	// Obtener ruta absoluta para el archivo de ticket
-	wd, err := os.Getwd()
-	if err != nil {
-		log.Printf("Error al obtener directorio de trabajo: %v", err)
-		wd = "."
-	}
-
-	// Guardar en archivo
-	filename := fmt.Sprintf("data/ticket_%s.json", ticket.ID)
-	absFilename := path.Join(wd, filename)
-	log.Printf("Guardando ticket en archivo: %s", absFilename)
-
-	err = os.WriteFile(filename, data, 0644)
-	if err != nil {
-		log.Printf("Error al escribir archivo de ticket: %v", err)
-		return err
-	}
-
-	log.Printf("Ticket guardado exitosamente: %s", filename)
-
-	// Verificar que el archivo existe
-	if _, err := os.Stat(filename); os.IsNotExist(err) {
-		log.Printf("¡Error! Archivo no encontrado después de guardar: %s", filename)
-	} else {
-		log.Printf("Verificación: archivo existe después de guardar: %s", filename)
 	}
 
 	return nil
@@ -600,27 +688,43 @@ func SaveTicket(ticket Ticket) error {
 
 // LoadTicket carga un ticket desde el almacenamiento local
 func LoadTicket(ticketID string) (Ticket, error) {
-	filename := fmt.Sprintf("data/ticket_%s.json", ticketID)
-	data, err := os.ReadFile(filename)
+	if db == nil {
+		return Ticket{}, fmt.Errorf("database not initialized")
+	}
+
+	var t Ticket
+	err := db.QueryRow(`
+                SELECT ticket_id, title, subject, description, status, priority,
+                       client_name, client_email, widget_id, department, created_at, updated_at
+                FROM widget_tickets_api WHERE ticket_id=$1
+        `, ticketID).Scan(&t.ID, &t.Title, &t.Subject, &t.Description, &t.Status,
+		&t.Priority, &t.ClientName, &t.ClientEmail, &t.WidgetID, &t.Department, &t.CreatedAt, &t.UpdatedAt)
+
 	if err != nil {
-		// Si no se encuentra el archivo, puede ser un ticket del sistema GrowDesk
-		// Verificar si tiene formato de ticket de GrowDesk (TICKET-YYYYMMDDHHMMSS)
-		if strings.HasPrefix(ticketID, "TICKET-") {
-			// Intentar buscar en el sistema GrowDesk
-			log.Printf("Ticket %s no encontrado localmente, buscando en GrowDesk...", ticketID)
-			growdeskTicket, err := getTicketFromGrowDesk(ticketID)
-			if err != nil {
-				log.Printf("Error al buscar ticket en GrowDesk: %v", err)
-				return Ticket{}, err
-			}
-			return growdeskTicket, nil
+		if err == sql.ErrNoRows {
+			return Ticket{}, fmt.Errorf("ticket not found")
 		}
 		return Ticket{}, err
 	}
 
-	var ticket Ticket
-	err = json.Unmarshal(data, &ticket)
-	return ticket, err
+	rows, err := db.Query(`
+                SELECT id, content, is_client, user_name, user_email, created_at
+                FROM widget_messages_api WHERE ticket_id=$1 ORDER BY created_at ASC
+        `, ticketID)
+	if err != nil {
+		return Ticket{}, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var m Message
+		if err := rows.Scan(&m.ID, &m.Content, &m.IsClient, &m.UserName, &m.UserEmail, &m.CreatedAt); err != nil {
+			return Ticket{}, err
+		}
+		t.Messages = append(t.Messages, m)
+	}
+	t.UserName = t.ClientName
+	t.UserEmail = t.ClientEmail
+	return t, nil
 }
 
 // getMessages obtiene los mensajes de un ticket

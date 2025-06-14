@@ -116,8 +116,35 @@ CREATE TABLE IF NOT EXISTS widget_settings (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Tabla de tickets de widget
+-- Tabla de tickets de widget (para el widget-api)
 CREATE TABLE IF NOT EXISTS widget_tickets (
+    ticket_id TEXT PRIMARY KEY,
+    title TEXT,
+    subject TEXT,
+    description TEXT,
+    status TEXT,
+    priority TEXT,
+    client_name TEXT,
+    client_email TEXT,
+    widget_id TEXT,
+    department TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Tabla de mensajes de widget (para el widget-api)
+CREATE TABLE IF NOT EXISTS widget_messages (
+    id TEXT PRIMARY KEY,
+    ticket_id TEXT REFERENCES widget_tickets(ticket_id) ON DELETE CASCADE,
+    content TEXT,
+    is_client BOOLEAN DEFAULT TRUE,
+    user_name TEXT,
+    user_email TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Tabla de tickets de widget (para el sistema principal)
+CREATE TABLE IF NOT EXISTS widget_tickets_main (
     id TEXT PRIMARY KEY,
     ticket_id TEXT REFERENCES tickets(id) ON DELETE CASCADE,
     title TEXT NOT NULL,
@@ -134,10 +161,10 @@ CREATE TABLE IF NOT EXISTS widget_tickets (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Tabla de mensajes de widget
-CREATE TABLE IF NOT EXISTS widget_messages (
+-- Tabla de mensajes de widget (para el sistema principal)
+CREATE TABLE IF NOT EXISTS widget_messages_main (
     id TEXT PRIMARY KEY,
-    widget_ticket_id TEXT REFERENCES widget_tickets(id) ON DELETE CASCADE,
+    widget_ticket_id TEXT REFERENCES widget_tickets_main(id) ON DELETE CASCADE,
     content TEXT NOT NULL,
     is_client BOOLEAN DEFAULT FALSE,
     user_name TEXT,
@@ -151,7 +178,7 @@ CREATE TABLE IF NOT EXISTS widget_sessions (
     id TEXT PRIMARY KEY,
     name TEXT,
     email TEXT,
-    ticket_id TEXT REFERENCES widget_tickets(id) ON DELETE CASCADE,
+    ticket_id TEXT REFERENCES widget_tickets_main(id) ON DELETE CASCADE,
     widget_id TEXT REFERENCES widget_settings(widget_id),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     expires_at TIMESTAMP WITH TIME ZONE,
@@ -214,8 +241,9 @@ CREATE INDEX IF NOT EXISTS idx_tickets_assigned_to ON tickets(assigned_to);
 CREATE INDEX IF NOT EXISTS idx_messages_ticket_id ON messages(ticket_id);
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_faqs_is_published ON faqs(is_published);
-CREATE INDEX IF NOT EXISTS idx_widget_tickets_widget_id ON widget_tickets(widget_id);
-CREATE INDEX IF NOT EXISTS idx_widget_messages_widget_ticket_id ON widget_messages(widget_ticket_id);
+CREATE INDEX IF NOT EXISTS idx_widget_tickets_main_widget_id ON widget_tickets_main(widget_id);
+CREATE INDEX IF NOT EXISTS idx_widget_messages_main_widget_ticket_id ON widget_messages_main(widget_ticket_id);
 CREATE INDEX IF NOT EXISTS idx_activities_user_id ON activities(user_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id);
-CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(read); 
+CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(read);
+CREATE INDEX IF NOT EXISTS idx_widget_messages_ticket_id ON widget_messages(ticket_id); 
