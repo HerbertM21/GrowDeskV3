@@ -82,9 +82,11 @@ func main() {
 		fmt.Printf("🔧 DEBUG: Creando PostgreSQL store...\n")
 		// Crear store PostgreSQL
 		store = db.NewPostgreSQLStore(database)
+		ensureWidgetSystemUser(store)
 	} else {
 		log.Println("Usando almacenamiento en archivos")
 		store = data.NewStore(*dataDir)
+		ensureWidgetSystemUser(store)
 	}
 
 	fmt.Printf("🔧 DEBUG: Creando handlers...\n")
@@ -686,4 +688,34 @@ func getEnvBool(key string, defaultValue bool) bool {
 	}
 
 	return value
+}
+
+// ensureWidgetSystemUser verifica que exista un usuario especial para el widget
+// en la base de datos. Si no existe, lo crea para evitar fallos por la
+// restricción foreign key cuando se crean tickets desde el widget.
+func ensureWidgetSystemUser(store data.DataStore) {
+	const widgetUserID = "widget-system"
+	if _, err := store.GetUser(widgetUserID); err == nil {
+		log.Printf("Usuario widget-system ya existe en la base de datos")
+		return
+	}
+
+	widgetUser := models.User{
+		ID:         widgetUserID,
+		FirstName:  "Widget",
+		LastName:   "System",
+		Email:      "widget@system.com",
+		Password:   "widget-password",
+		Role:       "admin",
+		Department: "Soporte",
+		Active:     true,
+		CreatedAt:  time.Now(),
+		UpdatedAt:  time.Now(),
+	}
+
+	if err := store.CreateUser(widgetUser); err != nil {
+		log.Printf("Error al crear usuario widget-system: %v", err)
+	} else {
+		log.Printf("Usuario widget-system creado por defecto")
+	}
 }

@@ -323,7 +323,7 @@ func (h *TicketHandler) AddTicketMessage(w http.ResponseWriter, r *http.Request)
 	json.NewEncoder(w).Encode(response)
 }
 
-// CreateWidgetTicket crea un nuevo ticket desde el widget
+// CreateWidgetTicket maneja la creación de tickets desde el widget de soporte
 func (h *TicketHandler) CreateWidgetTicket(w http.ResponseWriter, r *http.Request) {
 	// Importante: esta ruta es pública y no requiere autenticación
 	// Se usa para recibir tickets desde el widget de soporte
@@ -456,60 +456,9 @@ func (h *TicketHandler) CreateWidgetTicket(w http.ResponseWriter, r *http.Reques
 		UserEmail: email,
 	}
 
-	// Verificar si existe un usuario con este email para evitar violar la restricción foreign key
-	var userID string = ""
-	fmt.Printf("Buscando usuario con email: %s\n", email)
-	existingUser, userErr := h.Store.GetUserByEmail(email)
-	if userErr == nil && existingUser != nil {
-		// Si existe un usuario con este email, usar su ID
-		userID = existingUser.ID
-		fmt.Printf("Se encontró usuario existente con email %s, ID: %s\n", email, userID)
-	} else {
-		fmt.Printf("No se encontró usuario con email %s, error: %v\n", email, userErr)
-		// No hay usuario existente con este email, creamos uno nuevo
-		newUserID := "user-" + utils.GenerateTimestamp()
-		newUser := models.User{
-			ID:        newUserID,
-			Email:     email,
-			FirstName: name,
-			LastName:  "",
-			Password:  "widget-generated-password", // Contraseña temporal
-			Role:      "customer",
-			Active:    true,
-		}
-
-		// Intentar crear el usuario
-		createErr := h.Store.CreateUser(newUser)
-		if createErr != nil {
-			fmt.Printf("Error al crear usuario para el widget: %v\n", createErr)
-			// Si falla la creación, usamos el usuario admin como fallback
-			adminUser, adminErr := h.Store.GetUserByEmail("admin@growdesk.com")
-			if adminErr == nil && adminUser != nil {
-				userID = adminUser.ID
-				fmt.Printf("Usando usuario admin con ID: %s como fallback\n", userID)
-			} else {
-				// Si no podemos obtener el usuario admin, creamos uno de emergencia
-				emergencyUserID := "admin-emergency"
-				emergencyUser := models.User{
-					ID:        emergencyUserID,
-					Email:     "emergency@growdesk.com",
-					FirstName: "Emergency",
-					LastName:  "User",
-					Password:  "emergency-password",
-					Role:      "admin",
-					Active:    true,
-				}
-
-				h.Store.CreateUser(emergencyUser)
-				userID = emergencyUserID
-				fmt.Printf("Creado usuario de emergencia con ID: %s\n", userID)
-			}
-		} else {
-			// Usuario creado exitosamente
-			userID = newUserID
-			fmt.Printf("Usuario creado exitosamente con ID: %s\n", userID)
-		}
-	}
+	// Para tickets creados desde el widget, no asignamos un created_by específico
+	// ya que hemos modificado la tabla para permitir valores NULL en este campo
+	// Esto evita depender de un usuario específico en la base de datos
 
 	// Crear objeto de ticket para PostgreSQL
 	ticket := models.Ticket{
@@ -523,13 +472,10 @@ func (h *TicketHandler) CreateWidgetTicket(w http.ResponseWriter, r *http.Reques
 		Priority:    widgetRequest.Priority,
 		Category:    widgetRequest.Department,
 		Department:  widgetRequest.Department,
-		// Solo usar UserID si tenemos uno válido
-		UserID: userID,
-		// IMPORTANTE: Asegurarse de que siempre tenga un valor válido
-		// Usar el ID del usuario específico para el widget
-		CreatedBy: "widget-system", // Usuario específico para el widget
-		Source:    widgetRequest.Source,
-		WidgetID:  widgetRequest.WidgetID,
+		UserID:      "",       // No asignamos un usuario específico
+		CreatedBy:   "",       // No asignamos un usuario específico
+		Source:      "widget", // Marcamos explícitamente que viene del widget
+		WidgetID:    widgetRequest.WidgetID,
 		Customer: models.Customer{
 			Name:  name,
 			Email: email,
@@ -539,7 +485,7 @@ func (h *TicketHandler) CreateWidgetTicket(w http.ResponseWriter, r *http.Reques
 	}
 
 	fmt.Printf("Intentando guardar ticket en base de datos: %+v\n", ticket)
-	fmt.Printf("UserID asignado: '%s'\n", userID)
+	fmt.Printf("Ticket creado desde widget sin usuario asignado\n")
 
 	// Almacenar en la base de datos
 	err := h.Store.CreateTicket(ticket)

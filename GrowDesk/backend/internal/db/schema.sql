@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS tickets (
     category TEXT,
     category_id TEXT REFERENCES categories(id),
     assigned_to TEXT REFERENCES users(id),
-    created_by TEXT REFERENCES users(id),
+    created_by TEXT,
     user_id TEXT REFERENCES users(id),
     source TEXT,
     widget_id TEXT,
