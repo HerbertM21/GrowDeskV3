@@ -108,6 +108,19 @@ const ticketService = {
     }
   },
 
+  async updateTicketPriority(id: string, priority: string): Promise<Ticket> {
+    try {
+      console.log(`📡 Actualizando prioridad del ticket ${id} a ${priority}`);
+      // Usar el método updateTicket pero solo con el campo priority
+      const response = await apiClient.put(`/tickets/${id}`, { priority });
+      console.log(`✅ Prioridad del ticket ${id} actualizada correctamente a ${priority}:`, response.data);
+      return response.data;
+    } catch (error) {
+      console.error(`❌ Error al actualizar prioridad del ticket ${id}:`, error);
+      throw error;
+    }
+  },
+
   async assignTicket(id: string, userId: string): Promise<Ticket> {
     try {
       console.log(`📡 Asignando ticket ${id} al usuario ${userId}`);
@@ -116,7 +129,7 @@ const ticketService = {
         status: 'assigned'
       });
       console.log(`✅ Ticket ${id} asignado correctamente al usuario ${userId}`);
-      return response.data;
+      return response.data.ticket || response.data;
     } catch (error) {
       console.error(`❌ Error al asignar ticket ${id} al usuario ${userId}:`, error);
       throw error;

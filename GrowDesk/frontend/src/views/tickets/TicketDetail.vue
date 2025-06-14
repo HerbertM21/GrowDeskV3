@@ -352,15 +352,7 @@ const isAdmin = computed(() => {
 });
 
 const isAssistant = computed(() => {
-  const assistantStatus = authStore.isAssistant;
-  console.log('Estado isAssistant (computed property):', assistantStatus);
-  return assistantStatus;
-});
-
-const isEmployee = computed(() => {
-  const employeeStatus = !!authStore.user && authStore.user.role === 'employee';
-  console.log('Estado isEmployee (computed property):', employeeStatus);
-  return employeeStatus;
+  return !!authStore.user && authStore.user.role === 'assistant';
 });
 
 // Propiedades para verificar acceso
@@ -370,16 +362,6 @@ const hasAdminAccess = computed(() => {
 
 const hasAssistantAccess = computed(() => {
   return isAssistant.value;
-});
-
-// Computed property para verificar si se ha cambiado la prioridad
-const isPriorityChanged = computed(() => {
-  return currentTicket.value && selectedPriority.value !== currentTicket.value.priority;
-});
-
-// Computed property para verificar si el ticket está asignado
-const isTicketAssigned = computed(() => {
-  return !!currentTicket.value && !!currentTicket.value.assignedTo;
 });
 
 // Computed property para obtener usuarios de soporte (admin y asistentes)
@@ -737,9 +719,9 @@ const updatePriorityTo = async (newPriority) => {
     // Mostrar carga
     isLoading.value = true;
     
-    // Intentar realizar la actualización en el servidor
+    // Intentar realizar la actualización en el servidor usando el método específico
     try {
-      const response = await ticketStore.updateTicket(ticketId, { priority: newPriority });
+      const response = await ticketStore.updateTicketPriority(ticketId, newPriority);
       console.log('Respuesta del servidor:', response);
       
       if (!response) {
@@ -809,12 +791,9 @@ const assignToUserQuick = async (userId) => {
     // Mostrar carga
     isLoading.value = true;
     
-    // Intentar realizar la actualización en el servidor
+    // Intentar realizar la actualización en el servidor usando el método específico
     try {
-      const response = await ticketStore.updateTicket(ticketId, { 
-        assignedTo: userId,
-        status: 'assigned'
-      });
+      const response = await ticketStore.assignTicket(ticketId, userId);
       
       console.log('Respuesta del servidor:', response);
       

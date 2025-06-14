@@ -498,36 +498,21 @@ export const useTicketStore = defineStore('tickets', {
       }
     },
 
-    // Función para verificar y debuggear asignaciones
+    // Función de depuración para asignación de tickets
     debugAssignment(ticketId: string) {
-      console.log('🔍 DEBUG ASSIGNMENT for ticket:', ticketId);
-      
       const ticket = this.tickets.find((t: Ticket) => t.id === ticketId);
-      const currentTicket = this.currentTicket;
-      
-      console.log('📋 Ticket en array:', ticket ? {
-        id: ticket.id,
-        assignedTo: ticket.assignedTo,
-        status: ticket.status
-      } : 'No encontrado');
-      
-      console.log('🎯 CurrentTicket:', currentTicket && currentTicket.id === ticketId ? {
-        id: currentTicket.id,
-        assignedTo: currentTicket.assignedTo,
-        status: currentTicket.status
-      } : 'No es el ticket actual');
-      
-      // Verificar localStorage
-      try {
-        const storedData = localStorage.getItem(TICKETS_STORAGE_KEY);
-        if (storedData) {
-          const storedTickets = JSON.parse(storedData);
-          const storedTicket = storedTickets.find((t: any) => t && t.id === ticketId);
-          console.log('💾 Ticket en localStorage:', storedTicket || 'No encontrado');
-        }
-      } catch (e) {
-        console.log('💾 Error al leer localStorage:', e);
+      console.group('🔍 Debug estado de asignación de ticket');
+      console.log('Ticket ID:', ticketId);
+      console.log('Ticket encontrado:', ticket ? 'Sí' : 'No');
+      if (ticket) {
+        console.log('Estado:', ticket.status);
+        console.log('Asignado a:', ticket.assignedTo || 'No asignado');
+        console.log('Actualizado:', ticket.updatedAt);
+        console.log('Datos completos:', ticket);
+      } else {
+        console.log('Tickets disponibles:', this.tickets.map((t: Ticket) => t.id));
       }
+      console.groupEnd();
     },
 
     async assignTicket(id: string, agentId: string) {
@@ -762,7 +747,84 @@ export const useTicketStore = defineStore('tickets', {
       }
     },
 
-    // Función para normalizar la prioridad (asegurarse de que esté en mayúsculas)
+    async updateTicketPriority(id: string, priority: string) {
+      this.loading = true;
+      this.error = null;
+      
+      try {
+        console.log(`🚀 Iniciando actualización de prioridad: ${id} a ${priority}`);
+        
+        // Validar ID del ticket
+        if (!id) {
+          throw new Error('ID de ticket requerido para actualizar prioridad');
+        }
+        
+        // Normalizar prioridad
+        const normalizedPriority = this.normalizePriority(priority);
+        console.log(`📊 Prioridad normalizada: ${normalizedPriority}`);
+        
+        // Encontrar el ticket en la lista local
+        const index = this.tickets.findIndex((t: Ticket) => t.id === id);
+        if (index === -1) {
+          throw new Error(`Ticket no encontrado: ${id}`);
+        }
+        
+        // Usar el servicio específico para actualizar prioridad
+        try {
+          const response = await ticketService.updateTicketPriority(id, normalizedPriority);
+          console.log(`✅ Prioridad actualizada exitosamente via API:`, response);
+          
+          // Actualizar el ticket en el store con los datos del servidor
+          if (response) {
+            this.tickets[index] = {
+              ...this.tickets[index],
+              priority: response.priority || normalizedPriority,
+              updatedAt: response.updatedAt || new Date().toISOString()
+            };
+            
+            // Si es el ticket actual, actualizar también
+            if (this.currentTicket?.id === id) {
+              this.currentTicket = { ...this.tickets[index] };
+            }
+            
+            // Guardar en localStorage
+            saveTicketsToStorage(this.tickets);
+            
+            return response;
+          }
+        } catch (apiError) {
+          console.error('❌ Error al actualizar prioridad via API:', apiError);
+          
+          // Fallback: actualizar localmente si la API falla
+          console.log('⚠️ Usando fallback para actualizar prioridad localmente');
+          
+          // Actualizar localmente
+          this.tickets[index] = {
+            ...this.tickets[index],
+            priority: normalizedPriority,
+            updatedAt: new Date().toISOString()
+          };
+          
+          // Si es el ticket actual, actualizar también
+          if (this.currentTicket?.id === id) {
+            this.currentTicket = { ...this.tickets[index] };
+          }
+          
+          // Guardar en localStorage
+          saveTicketsToStorage(this.tickets);
+          
+          // Devolver el ticket actualizado localmente
+          return this.tickets[index];
+        }
+      } catch (error: any) {
+        console.error('❌ Error general al actualizar prioridad:', error);
+        this.error = `Error al actualizar prioridad: ${error.message}`;
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+
     normalizePriority(priority: string): string {
       const p = String(priority).toLowerCase()
       if (p === 'high' || p === 'alta') return 'HIGH'

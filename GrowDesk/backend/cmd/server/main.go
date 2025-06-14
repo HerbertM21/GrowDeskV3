@@ -174,21 +174,7 @@ func main() {
 				fmt.Printf("❌ MÉTODO NO PERMITIDO para asignación: %s\n", r.Method)
 				http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
 			}
-		} else if filepath.Base(filepath.Dir(path)) == "tickets" && filepath.Ext(path) == "" && filepath.Base(path) != "assign" {
-			// Esta es una ruta para un ID de ticket específico como /api/tickets/:id
-			fmt.Printf("🎯 MATCHING: Ruta de ticket específico detectada\n")
-			switch r.Method {
-			case http.MethodGet:
-				fmt.Printf("➡️ CALLING: ticketHandler.GetTicket\n")
-				ticketHandler.GetTicket(w, r)
-			case http.MethodPut:
-				fmt.Printf("➡️ CALLING: ticketHandler.UpdateTicket\n")
-				ticketHandler.UpdateTicket(w, r)
-			default:
-				fmt.Printf("❌ MÉTODO NO PERMITIDO para ticket específico: %s\n", r.Method)
-				http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
-			}
-		} else if filepath.Base(path) == "messages" {
+		} else if strings.HasSuffix(path, "/messages") {
 			// Esta es una ruta para mensajes de tickets como /api/tickets/:id/messages
 			fmt.Printf("🎯 MATCHING: Ruta de mensajes de ticket detectada\n")
 			switch r.Method {
@@ -200,6 +186,20 @@ func main() {
 				ticketHandler.AddTicketMessage(w, r)
 			default:
 				fmt.Printf("❌ MÉTODO NO PERMITIDO para mensajes: %s\n", r.Method)
+				http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
+			}
+		} else if len(strings.Split(path, "/")) == 4 {
+			// Esta es una ruta para un ID de ticket específico como /api/tickets/:id
+			fmt.Printf("🎯 MATCHING: Ruta de ticket específico detectada\n")
+			switch r.Method {
+			case http.MethodGet:
+				fmt.Printf("➡️ CALLING: ticketHandler.GetTicket\n")
+				ticketHandler.GetTicket(w, r)
+			case http.MethodPut:
+				fmt.Printf("➡️ CALLING: ticketHandler.UpdateTicket\n")
+				ticketHandler.UpdateTicket(w, r)
+			default:
+				fmt.Printf("❌ MÉTODO NO PERMITIDO para ticket específico: %s\n", r.Method)
 				http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
 			}
 		} else {
@@ -701,7 +701,7 @@ func ensureWidgetSystemUser(store data.DataStore) {
 		LastName:   "System",
 		Email:      "widget@system.com",
 		Password:   "widget-password",
-		Role:       "admin",
+		Role:       "system",
 		Department: "Soporte",
 		Active:     true,
 		CreatedAt:  time.Now(),

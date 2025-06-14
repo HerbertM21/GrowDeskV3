@@ -324,216 +324,13 @@ func (h *TicketHandler) AddTicketMessage(w http.ResponseWriter, r *http.Request)
 }
 
 // CreateWidgetTicket maneja la creación de tickets desde el widget de soporte
-func (h *TicketHandler) CreateWidgetTicket(w http.ResponseWriter, r *http.Request) {
-	// Importante: esta ruta es pública y no requiere autenticación
-	// Se usa para recibir tickets desde el widget de soporte
-	// Esta función se puede llamar desde:
-	// - /widget/tickets (ruta original)
-	// - /api/widget/tickets (ruta alternativa)
-
-	fmt.Println("=== RECIBIENDO TICKET DESDE WIDGET ===")
-	fmt.Printf("URL: %s\n", r.URL.Path)
-	fmt.Printf("Headers: %v\n", r.Header)
-
-	// Solo maneja solicitudes POST
-	if r.Method != http.MethodPost {
-		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
-		return
-	}
-
-	// Log para depuración
-	body, _ := io.ReadAll(r.Body)
-	r.Body = io.NopCloser(bytes.NewBuffer(body))
-	fmt.Printf("Recibido del widget: %s\n", string(body))
-
-	// Estructura para recibir el formato específico del widget
-	var widgetRequest struct {
-		ID          string                 `json:"id"`
-		Title       string                 `json:"title"`
-		Subject     string                 `json:"subject"`
-		Description string                 `json:"description"`
-		Status      string                 `json:"status"`
-		Priority    string                 `json:"priority"`
-		Email       string                 `json:"email"`
-		Name        string                 `json:"name"`
-		ClientName  string                 `json:"clientName"`
-		ClientEmail string                 `json:"clientEmail"`
-		Department  string                 `json:"department"`
-		Source      string                 `json:"source"`
-		WidgetID    string                 `json:"widgetId"`
-		CreatedAt   string                 `json:"createdAt"`
-		Metadata    map[string]interface{} `json:"metadata"`
-	}
-
-	// Intentar decodificar primero con el formato del widget
-	if err := json.Unmarshal(body, &widgetRequest); err != nil {
-		fmt.Printf("Error al decodificar la solicitud del widget: %v\n", err)
-		http.Error(w, "Invalid request body: "+err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	// Validaciones básicas
-	if widgetRequest.Subject == "" && widgetRequest.Title == "" {
-		fmt.Printf("Error: Solicitud sin título o asunto\n")
-		http.Error(w, "Subject or title is required", http.StatusBadRequest)
-		return
-	}
-
-	// Establecer valores por defecto si están vacíos
-	if widgetRequest.Status == "" {
-		widgetRequest.Status = "open"
-	}
-
-	if widgetRequest.Priority == "" {
-		widgetRequest.Priority = "medium"
-	}
-
-	if widgetRequest.Department == "" {
-		widgetRequest.Department = "soporte"
-	}
-
-	if widgetRequest.Source == "" {
-		widgetRequest.Source = "widget"
-	}
-
-	// Usar nombre del cliente para completar campos si están vacíos
-	name := widgetRequest.Name
-	if name == "" {
-		name = widgetRequest.ClientName
-		if name == "" {
-			name = "Anónimo"
-		}
-	}
-
-	email := widgetRequest.Email
-	if email == "" {
-		email = widgetRequest.ClientEmail
-		if email == "" {
-			email = "anonymous@example.com"
-		}
-	}
-
-	// Usar ID proporcionado o generar uno nuevo
-	ticketID := widgetRequest.ID
-	if ticketID == "" {
-		ticketID = utils.GenerateTicketID()
-	}
-
-	// Fecha de creación
-	now := time.Now()
-	createdAt := now
-	if widgetRequest.CreatedAt != "" {
-		parsedTime, err := time.Parse(time.RFC3339, widgetRequest.CreatedAt)
-		if err == nil {
-			createdAt = parsedTime
-		}
-	}
-
-	// Determinar el título para mantener consistencia
-	title := widgetRequest.Title
-	if title == "" {
-		title = widgetRequest.Subject
-	}
-
-	// Crear metadata para el ticket
-	var ticketMetadata *models.Metadata
-	if widgetRequest.Metadata != nil {
-		ticketMetadata = &models.Metadata{
-			URL:       utils.GetStringFromMap(widgetRequest.Metadata, "url"),
-			UserAgent: utils.GetStringFromMap(widgetRequest.Metadata, "userAgent"),
-			Referrer:  utils.GetStringFromMap(widgetRequest.Metadata, "referrer"),
-		}
-	}
-
-	// Crear el mensaje inicial
-	initialMessage := models.Message{
-		ID:        utils.GenerateMessageID(),
-		Content:   widgetRequest.Description,
-		IsClient:  true,
-		Timestamp: createdAt,
-		CreatedAt: createdAt,
-		UserName:  name,
-		UserEmail: email,
-	}
-
-	// Para tickets creados desde el widget, no asignamos un created_by específico
-	// ya que hemos modificado la tabla para permitir valores NULL en este campo
-	// Esto evita depender de un usuario específico en la base de datos
-
-	// Crear objeto de ticket para PostgreSQL
-	ticket := models.Ticket{
-		ID:          ticketID,
-		Title:       title,
-		Subject:     widgetRequest.Subject,
-		Status:      widgetRequest.Status,
-		CreatedAt:   createdAt,
-		UpdatedAt:   now,
-		Description: widgetRequest.Description,
-		Priority:    widgetRequest.Priority,
-		Category:    widgetRequest.Department,
-		Department:  widgetRequest.Department,
-		UserID:      "",       // No asignamos un usuario específico
-		CreatedBy:   "",       // No asignamos un usuario específico
-		Source:      "widget", // Marcamos explícitamente que viene del widget
-		WidgetID:    widgetRequest.WidgetID,
-		Customer: models.Customer{
-			Name:  name,
-			Email: email,
-		},
-		Messages: []models.Message{initialMessage},
-		Metadata: ticketMetadata,
-	}
-
-	fmt.Printf("Intentando guardar ticket en base de datos: %+v\n", ticket)
-	fmt.Printf("Ticket creado desde widget sin usuario asignado\n")
-
-	// Almacenar en la base de datos
-	err := h.Store.CreateTicket(ticket)
-	if err != nil {
-		fmt.Printf("ERROR AL GUARDAR TICKET EN LA BASE DE DATOS: %v\n", err)
-		fmt.Printf("Detalles del ticket que no se pudo guardar: ID=%s, Title=%s, UserID=%s\n", ticket.ID, ticket.Title, ticket.UserID)
-
-		// Intentar verificar si el ticket ya existe
-		existingTicket, checkErr := h.Store.GetTicket(ticketID)
-		if checkErr != nil {
-			fmt.Printf("El ticket no existe previamente en la base de datos: %v\n", checkErr)
-		} else {
-			fmt.Printf("ALERTA: El ticket ya existe en la base de datos: %+v\n", existingTicket)
-		}
-
-		http.Error(w, "Error creating ticket: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// Confirmar la creación y loguear para depuración
-	fmt.Printf("Ticket %s guardado correctamente en la base de datos\n", ticketID)
-
-	// Verificar que el ticket se guardó correctamente
-	verifiedTicket, verifyErr := h.Store.GetTicket(ticketID)
-	if verifyErr != nil {
-		fmt.Printf("ALERTA: No se pudo verificar el ticket recién creado: %v\n", verifyErr)
-	} else {
-		fmt.Printf("Verificación exitosa - Ticket recuperado de la base de datos: %+v\n", verifiedTicket)
-	}
-
-	// Devolver respuesta de éxito con el formato que el widget espera
-	response := map[string]interface{}{
-		"success":           true,
-		"ticketId":          ticketID,
-		"id":                ticketID,
-		"liveChatAvailable": true,
-		"message":           "Ticket creado correctamente",
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(response)
-}
-
-// AssignTicket asigna un ticket a un usuario específico
 func (h *TicketHandler) AssignTicket(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("=== INICIANDO ASIGNACIÓN DE TICKET ===")
+	fmt.Printf("URL: %s, Método: %s\n", r.URL.Path, r.Method)
+
 	// Solo maneja solicitudes POST
 	if r.Method != http.MethodPost {
+		fmt.Println("Error: Método no permitido")
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
@@ -544,12 +341,31 @@ func (h *TicketHandler) AssignTicket(w http.ResponseWriter, r *http.Request) {
 	// Extraer el ID del ticket desde la URL
 	// Formato de URL: /api/tickets/:id/assign
 	parts := strings.Split(r.URL.Path, "/")
-	if len(parts) < 4 {
-		http.Error(w, "ID de ticket inválido", http.StatusBadRequest)
+	fmt.Printf("Partes de la URL: %v\n", parts)
+
+	// Buscar el índice de "tickets" en la URL
+	ticketIndex := -1
+	for i, part := range parts {
+		if part == "tickets" && i < len(parts)-2 {
+			ticketIndex = i
+			break
+		}
+	}
+
+	if ticketIndex == -1 || ticketIndex+1 >= len(parts) {
+		fmt.Println("Error: No se pudo encontrar el patrón 'tickets/:id' en la URL")
+		http.Error(w, "URL mal formada", http.StatusBadRequest)
 		return
 	}
 
-	ticketID := parts[len(parts)-2] // El ID está antes de "assign"
+	ticketID := parts[ticketIndex+1]
+	fmt.Printf("ID del ticket extraído: %s\n", ticketID)
+
+	if ticketID == "" || ticketID == "assign" {
+		fmt.Println("Error: ID de ticket inválido")
+		http.Error(w, "ID de ticket inválido", http.StatusBadRequest)
+		return
+	}
 
 	// Parsear el cuerpo de la solicitud
 	var assignReq struct {
@@ -557,32 +373,48 @@ func (h *TicketHandler) AssignTicket(w http.ResponseWriter, r *http.Request) {
 		Status     string `json:"status,omitempty"`
 	}
 
+	// Log del cuerpo de la solicitud
+	body, _ := io.ReadAll(r.Body)
+	r.Body = io.NopCloser(bytes.NewBuffer(body))
+	fmt.Printf("Cuerpo de la solicitud: %s\n", string(body))
+
 	if err := json.NewDecoder(r.Body).Decode(&assignReq); err != nil {
+		fmt.Printf("Error al decodificar el cuerpo: %v\n", err)
 		http.Error(w, "El cuerpo de la solicitud es inválido", http.StatusBadRequest)
 		return
 	}
 
+	fmt.Printf("Datos decodificados: assignedTo=%s, status=%s\n", assignReq.AssignedTo, assignReq.Status)
+
 	// Validar que se proporcionó el ID del usuario asignado
 	if assignReq.AssignedTo == "" {
+		fmt.Println("Error: No se proporcionó ID de usuario para asignar")
 		http.Error(w, "Se requiere el ID del usuario asignado", http.StatusBadRequest)
 		return
 	}
 
 	// Verificar que el usuario existe
-	_, err := h.Store.GetUser(assignReq.AssignedTo)
+	fmt.Printf("Buscando usuario con ID: %s\n", assignReq.AssignedTo)
+	user, err := h.Store.GetUser(assignReq.AssignedTo)
 	if err != nil {
+		fmt.Printf("Error al buscar usuario: %v\n", err)
 		http.Error(w, "Usuario no encontrado", http.StatusNotFound)
 		return
 	}
+	fmt.Printf("Usuario encontrado: %s %s (ID: %s)\n", user.FirstName, user.LastName, user.ID)
 
 	// Obtener el ticket existente
+	fmt.Printf("Buscando ticket con ID: %s\n", ticketID)
 	ticket, err := h.Store.GetTicket(ticketID)
 	if err != nil {
+		fmt.Printf("Error al buscar ticket: %v\n", err)
 		http.Error(w, "Ticket no encontrado", http.StatusNotFound)
 		return
 	}
+	fmt.Printf("Ticket encontrado: %s (ID: %s)\n", ticket.Title, ticket.ID)
 
 	// Actualizar el ticket con la asignación
+	fmt.Printf("Actualizando ticket: Asignando de '%s' a '%s'\n", ticket.AssignedTo, assignReq.AssignedTo)
 	ticket.AssignedTo = assignReq.AssignedTo
 
 	// Si se proporciona un nuevo estado, actualizarlo; si no, usar "assigned"
@@ -591,14 +423,18 @@ func (h *TicketHandler) AssignTicket(w http.ResponseWriter, r *http.Request) {
 	} else {
 		ticket.Status = "assigned"
 	}
+	fmt.Printf("Estado del ticket actualizado a: %s\n", ticket.Status)
 
 	ticket.UpdatedAt = time.Now()
 
 	// Guardar en el almacén
+	fmt.Printf("Guardando ticket actualizado en la base de datos...\n")
 	if err := h.Store.UpdateTicket(*ticket); err != nil {
+		fmt.Printf("Error al actualizar ticket en base de datos: %v\n", err)
 		http.Error(w, "Error al asignar ticket", http.StatusInternalServerError)
 		return
 	}
+	fmt.Println("Ticket actualizado exitosamente en la base de datos")
 
 	// Devolver ticket actualizado
 	utils.WriteJSON(w, http.StatusOK, map[string]interface{}{
@@ -606,4 +442,5 @@ func (h *TicketHandler) AssignTicket(w http.ResponseWriter, r *http.Request) {
 		"message": "Ticket asignado correctamente",
 		"ticket":  ticket,
 	})
+	fmt.Println("=== ASIGNACIÓN DE TICKET COMPLETADA ===")
 }

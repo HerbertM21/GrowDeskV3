@@ -813,17 +813,18 @@ const handleDrop = async (event, columnId) => {
       const currentTicket = ticketStore.tickets[ticketIndex];
       const currentTags = currentTicket.tags ? [...currentTicket.tags] : [];
       
-      // Preparar datos de actualización
-      const updateData = { status: newStatus };
+      let updatedTicket;
       
-      // Si necesita ser asignado al usuario actual, incluir esa información
+      // Si necesita ser asignado, usar assignTicket
       if (assignToUser) {
-        updateData.assignedTo = assignToUser;
         console.log(`Asignando ticket ${ticketId} al usuario ${assignToUser} al moverlo a columna ${columnId}`);
+        updatedTicket = await ticketStore.assignTicket(ticketId, assignToUser);
+      } 
+      // Si solo cambia el estado, usar updateTicketStatus
+      else {
+        console.log(`Actualizando estado del ticket ${ticketId} a ${newStatus}`);
+        updatedTicket = await ticketStore.updateTicketStatus(ticketId, newStatus);
       }
-      
-      // Actualizar el ticket en el store
-      const updatedTicket = await ticketStore.updateTicket(ticketId, updateData);
       
       // Forzar actualización de las etiquetas del ticket en la vista local para evitar desaparición visual
       if (updatedTicket) {
@@ -836,7 +837,7 @@ const handleDrop = async (event, columnId) => {
         const updatedIndex = ticketStore.tickets.findIndex(t => t.id === ticketId);
         if (updatedIndex !== -1) {
           if (!ticketStore.tickets[updatedIndex].tags) {
-          ticketStore.tickets[updatedIndex].tags = currentTags;
+            ticketStore.tickets[updatedIndex].tags = currentTags;
           }
           // Asegurar que la asignación se refleje correctamente
           if (assignToUser) {
@@ -1147,6 +1148,7 @@ const unassignTicket = async () => {
   console.log('🗑️ KANBAN: Iniciando desasignación desde modal');
   
   try {
+    // Usar updateTicket directamente ya que no hay un método específico para desasignar
     const result = await ticketStore.updateTicket(previewTicket.value.id, { 
       assignedTo: null,
       status: 'open'
