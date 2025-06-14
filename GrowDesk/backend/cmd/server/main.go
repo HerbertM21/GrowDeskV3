@@ -125,14 +125,9 @@ func main() {
 	fmt.Printf("🔧 REGISTRANDO HANDLER WEBSOCKET para /api/ws/chat/ (PRIORIDAD MÁXIMA)\n")
 	mux.HandleFunc("/api/ws/chat/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("🔧 WEBSOCKET HANDLER EJECUTÁNDOSE para ruta dinámica: %s\n", r.URL.Path)
-		// Convertir el tipo de store a *data.Store
-		storePtr, ok := store.(*data.Store)
-		if !ok {
-			fmt.Printf("❌ ERROR: No se pudo convertir el store al tipo *data.Store\n")
-			http.Error(w, "Error interno del servidor", http.StatusInternalServerError)
-			return
-		}
-		websocket.ChatHandler(storePtr)(w, r)
+
+		// Usar directamente el WebSocket handler con la interfaz DataStore
+		websocket.ChatHandler(store)(w, r)
 	})
 
 	// Rutas de autenticación
