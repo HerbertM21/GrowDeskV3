@@ -25,7 +25,7 @@ providers:
   docker:
     endpoint: "unix:///var/run/docker.sock"
     exposedByDefault: false
-    network: "growdeskv2_grow-network"
+    network: "growdesk_grow-network"
     useBindPortIP: false
     swarmMode: false
   file:

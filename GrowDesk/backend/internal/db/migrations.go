@@ -427,11 +427,11 @@ func MigrateWidgetTickets(db *sql.DB, widgetDataDir string) error {
 	// Preparar statement para widget_tickets
 	ticketStmt, err := tx.Prepare(`
 		INSERT INTO widget_tickets (
-			id, ticket_id, title, subject, description, status, priority,
-			created_at, updated_at, client_name, client_email, widget_id, department, synced
+			ticket_id, title, subject, description, status, priority,
+			created_at, updated_at, client_name, client_email, widget_id, department
 		) VALUES (
-			$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
-		) ON CONFLICT (id) DO NOTHING
+			$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
+		) ON CONFLICT (ticket_id) DO NOTHING
 	`)
 	if err != nil {
 		return fmt.Errorf("error al preparar statement de widget_tickets: %v", err)
@@ -441,9 +441,9 @@ func MigrateWidgetTickets(db *sql.DB, widgetDataDir string) error {
 	// Preparar statement para widget_messages
 	messageStmt, err := tx.Prepare(`
 		INSERT INTO widget_messages (
-			id, widget_ticket_id, content, is_client, created_at, user_name, user_email, synced
+			id, ticket_id, content, is_client, user_name, user_email, created_at
 		) VALUES (
-			$1, $2, $3, $4, $5, $6, $7, $8
+			$1, $2, $3, $4, $5, $6, $7
 		) ON CONFLICT (id) DO NOTHING
 	`)
 	if err != nil {
@@ -473,12 +473,8 @@ func MigrateWidgetTickets(db *sql.DB, widgetDataDir string) error {
 			ticketID = strings.TrimSuffix(ticketID, ".json")
 		}
 
-		// Generar un UUID para el ID de la tabla
-		id := uuid.New().String()
-
 		// Insertar el ticket en widget_tickets
 		_, err = ticketStmt.Exec(
-			id,
 			ticketID,
 			getStringOrEmpty(ticket, "title"),
 			getStringOrEmpty(ticket, "subject"),
@@ -491,7 +487,6 @@ func MigrateWidgetTickets(db *sql.DB, widgetDataDir string) error {
 			getStringOrEmpty(ticket, "clientEmail"),
 			getStringOrEmpty(ticket, "widgetId"),
 			getStringOrEmpty(ticket, "department"),
-			false, // synced = false
 		)
 		if err != nil {
 			log.Printf("Error al insertar ticket de widget %s: %v", ticketID, err)
@@ -514,13 +509,12 @@ func MigrateWidgetTickets(db *sql.DB, widgetDataDir string) error {
 
 				_, err = messageStmt.Exec(
 					msgID,
-					id,
+					ticketID,
 					getStringOrEmpty(msg, "content"),
 					getBoolOrDefault(msg, "isClient", true),
-					getTimeOrNow(msg, "createdAt"),
 					getStringOrEmpty(msg, "userName"),
 					getStringOrEmpty(msg, "userEmail"),
-					false, // synced = false
+					getTimeOrNow(msg, "createdAt"),
 				)
 				if err != nil {
 					log.Printf("Error al insertar mensaje de widget %s: %v", msgID, err)

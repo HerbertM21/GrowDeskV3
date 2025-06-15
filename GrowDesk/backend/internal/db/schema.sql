@@ -257,7 +257,8 @@ CREATE TABLE IF NOT EXISTS widget_messages_api (
     is_client BOOLEAN DEFAULT TRUE,
     user_name TEXT,
     user_email TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    synced BOOLEAN DEFAULT FALSE
 );
 
 -- Índices

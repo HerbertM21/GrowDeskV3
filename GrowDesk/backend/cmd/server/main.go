@@ -83,10 +83,12 @@ func main() {
 		// Crear store PostgreSQL
 		store = db.NewPostgreSQLStore(database)
 		ensureWidgetSystemUser(store)
+		ensureAdminUser(store)
 	} else {
 		log.Println("Usando almacenamiento en archivos")
 		store = data.NewStore(*dataDir)
 		ensureWidgetSystemUser(store)
+		ensureAdminUser(store)
 	}
 
 	fmt.Printf("🔧 DEBUG: Creando handlers...\n")
@@ -103,11 +105,16 @@ func main() {
 	fmt.Printf("🔧 DEBUG: Configurando middleware de autenticación...\n")
 	// Middleware de autenticación
 	var authMiddleware func(http.Handler) http.Handler
+
+	// FORZAR AUTENTICACIÓN REAL, ignorar la variable de entorno
+	*useMock = false
+
 	if *useMock {
 		authMiddleware = middleware.MockAuth
 		log.Println("Usando autenticación de prueba para desarrollo")
 	} else {
 		authMiddleware = middleware.Auth
+		log.Println("Usando autenticación REAL")
 	}
 
 	fmt.Printf("🔧 DEBUG: Registrando rutas de salud...\n")
@@ -209,8 +216,9 @@ func main() {
 	})))
 
 	// Rutas de widget (públicas)
-	mux.HandleFunc("/widget/tickets", ticketHandler.CreateWidgetTicket)
-	mux.HandleFunc("/api/widget/tickets", ticketHandler.CreateWidgetTicket) // Ruta alternativa para el widget
+	// Comentado temporalmente porque el método CreateWidgetTicket no existe
+	// mux.HandleFunc("/widget/tickets", ticketHandler.CreateWidgetTicket)
+	// mux.HandleFunc("/api/widget/tickets", ticketHandler.CreateWidgetTicket) // Ruta alternativa para el widget
 
 	// ÚNICO: Endpoint para que widget-api pueda enviar mensajes al backend
 	mux.HandleFunc("/widget/messages", func(w http.ResponseWriter, r *http.Request) {
@@ -712,5 +720,34 @@ func ensureWidgetSystemUser(store data.DataStore) {
 		log.Printf("Error al crear usuario widget-system: %v", err)
 	} else {
 		log.Printf("Usuario widget-system creado por defecto")
+	}
+}
+
+// ensureAdminUser verifica que exista un usuario administrador por defecto
+// para facilitar las pruebas y demostraciones del sistema
+func ensureAdminUser(store data.DataStore) {
+	const adminUserID = "agente-growdesk"
+	if _, err := store.GetUser(adminUserID); err == nil {
+		log.Printf("Usuario AgenteGrowdesk ya existe en la base de datos")
+		return
+	}
+
+	adminUser := models.User{
+		ID:         adminUserID,
+		FirstName:  "Agente",
+		LastName:   "GrowDesk",
+		Email:      "agente@growdesk.com",
+		Password:   "123456",
+		Role:       "admin",
+		Department: "Soporte",
+		Active:     true,
+		CreatedAt:  time.Now(),
+		UpdatedAt:  time.Now(),
+	}
+
+	if err := store.CreateUser(adminUser); err != nil {
+		log.Printf("Error al crear usuario AgenteGrowdesk: %v", err)
+	} else {
+		log.Printf("Usuario administrador AgenteGrowdesk creado por defecto")
 	}
 }

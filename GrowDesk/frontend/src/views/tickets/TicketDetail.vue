@@ -21,10 +21,12 @@
               <strong>ID:</strong> {{ currentTicket.id }}
             </div>
             <div class="ticket-status">
-              <span :class="['status-badge', currentTicket.status.toLowerCase()]">{{ translateStatus(currentTicket.status) }}</span>
+              <span :class="['status-badge', currentTicket.status && typeof currentTicket.status === 'string' ? currentTicket.status.toLowerCase() : 'open']">{{ translateStatus(currentTicket.status) }}</span>
             </div>
             <div class="ticket-priority">
-              <span :class="['priority-badge', normalizePriority(currentTicket.priority)]">{{ translatePriority(currentTicket.priority) }}</span>
+              <span :class="['priority-badge', normalizePriority(currentTicket.priority || 'medium')]">
+                {{ translatePriority(currentTicket.priority || 'medium') }}
+              </span>
             </div>
             <!-- Botones de acción -->
             <div v-if="hasAdminAccess || hasAssistantAccess" class="header-actions">
@@ -127,17 +129,18 @@
                         <i class="pi pi-user"></i>
                       </template>
                       <template v-else>
-                        <img v-if="getAgentAvatar(message.userId || currentTicket?.assignedTo)" :src="getAgentAvatar(message.userId || currentTicket?.assignedTo)" alt="Foto de perfil" />
-                        <i v-else class="pi pi-user-edit"></i>
+                        <i class="pi pi-user-edit"></i>
                       </template>
                     </div>
                   </div>
                   <div class="message-content">
                     <div class="message-header">
-                      <span class="sender">{{ message.isClient ? (currentTicket?.customer?.name || 'Cliente') : getMessageSenderName(message) }}</span>
+                      <span class="sender">
+                        {{ message.isClient ? (currentTicket?.customer?.name || 'Cliente') : getMessageSenderName(message) }}
+                      </span>
                       <span class="timestamp">{{ formatTimestamp(message.timestamp || message.createdAt) }}</span>
                     </div>
-                    <p class="content">{{ message.content }}</p>
+                    <p class="content">{{ message.content || 'Sin contenido' }}</p>
                   </div>
                 </div>
               </template>
@@ -195,14 +198,14 @@
                 <div class="info-item">
                   <span class="info-label">Estado:</span>
                   <span class="info-value">
-                    <span :class="['status-badge', currentTicket.status]">{{ translateStatus(currentTicket.status) }}</span>
+                    <span :class="['status-badge', currentTicket.status && typeof currentTicket.status === 'string' ? currentTicket.status.toLowerCase() : 'open']">{{ translateStatus(currentTicket.status) }}</span>
                   </span>
                 </div>
                 <div class="info-item">
                   <span class="info-label">Prioridad:</span>
                   <span class="info-value">
-                    <span :class="['priority-badge', normalizePriority(currentTicket.priority)]">
-                      {{ translatePriority(currentTicket.priority) }}
+                    <span :class="['priority-badge', normalizePriority(currentTicket.priority || 'medium')]">
+                      {{ translatePriority(currentTicket.priority || 'medium') }}
                     </span>
                   </span>
                 </div>
@@ -389,26 +392,34 @@ const availableCategories = computed(() => {
   return categoriesStore.categories;
 });
 
-// Funciones auxiliares
-const formatDate = (dateString) => {
-  if (!dateString) return '';
+// Función para formatear fechas
+const formatDate = (date) => {
+  if (!date) return 'Fecha desconocida';
   try {
-    return new Date(dateString).toLocaleString();
+    return new Date(date).toLocaleString();
   } catch (e) {
-    return dateString;
+    console.error('Error al formatear fecha:', e);
+    return 'Fecha inválida';
   }
 };
 
+// Función para formatear timestamps
 const formatTimestamp = (timestamp) => {
-  if (!timestamp) return '';
+  if (!timestamp) return 'Hora desconocida';
   try {
     return new Date(timestamp).toLocaleString();
   } catch (e) {
-    return timestamp;
+    console.error('Error al formatear timestamp:', e);
+    return 'Hora inválida';
   }
 };
 
 const translateStatus = (status) => {
+  // Si el status no existe, devolver un valor por defecto
+  if (status === undefined || status === null) {
+    return 'Abierto';
+  }
+  
   const statusMap = {
     'open': 'Abierto',
     'assigned': 'Asignado',
@@ -420,22 +431,35 @@ const translateStatus = (status) => {
 };
 
 const translatePriority = (priority) => {
-  if (!priority) return '';
+  // Si la prioridad no existe, devolver un valor por defecto
+  if (priority === undefined || priority === null) {
+    return 'Media';
+  }
   
   // Normalizar a minúsculas para la comparación
-  const normalizedPriority = String(priority).toLowerCase();
-  
-  const priorityMap = {
-    'low': 'Baja',
-    'medium': 'Media',
-    'high': 'Alta',
-    'urgent': 'Urgente'
-  };
-  
-  return priorityMap[normalizedPriority] || normalizedPriority;
+  try {
+    const normalizedPriority = String(priority).toLowerCase();
+    
+    const priorityMap = {
+      'low': 'Baja',
+      'medium': 'Media',
+      'high': 'Alta',
+      'urgent': 'Urgente'
+    };
+    
+    return priorityMap[normalizedPriority] || normalizedPriority;
+  } catch (e) {
+    console.error('Error al normalizar prioridad:', e);
+    return 'Media';
+  }
 };
 
 const translateCategory = (category) => {
+  // Si la categoría no existe, devolver un valor por defecto
+  if (category === undefined || category === null) {
+    return 'General';
+  }
+  
   const categoryMap = {
     'technical': 'Técnico',
     'billing': 'Facturación',
@@ -491,19 +515,27 @@ const showNotification = (message, type = 'success', duration = 5000) => {
 
 // Función para normalizar el valor de prioridad
 const normalizePriority = (priority) => {
-  if (!priority) return 'medium';
+  // Si la prioridad no existe, devolver un valor por defecto
+  if (priority === undefined || priority === null) {
+    return 'medium';
+  }
   
-  // Convertir a minúsculas
-  const lowerPriority = priority.toLowerCase();
-  
-  // Mapear diferentes formatos posibles al formato estándar
-  if (lowerPriority === 'baja' || lowerPriority === 'low') return 'low';
-  if (lowerPriority === 'media' || lowerPriority === 'medium') return 'medium';
-  if (lowerPriority === 'alta' || lowerPriority === 'high') return 'high';
-  if (lowerPriority === 'urgente' || lowerPriority === 'urgent') return 'urgent';
-  
-  // Si no coincide con ninguno, devolver medio por defecto
-  return 'medium';
+  // Intentar normalizar la prioridad
+  try {
+    const p = String(priority).toLowerCase();
+    
+    // Mapeo de variantes a valores normalizados
+    if (['low', 'baja', 'bajo'].includes(p)) return 'low';
+    if (['medium', 'normal', 'media', 'medio'].includes(p)) return 'medium';
+    if (['high', 'alta', 'alto'].includes(p)) return 'high';
+    if (['urgent', 'urgente', 'crítico', 'critico'].includes(p)) return 'urgent';
+    
+    // Si no coincide con ninguna, devolver la original en minúsculas
+    return p;
+  } catch (e) {
+    console.error('Error al normalizar prioridad:', e);
+    return 'medium';
+  }
 };
 
 // Funciones para manejo de asignaciones
@@ -841,6 +873,24 @@ const loadTicketData = async () => {
     isLoading.value = true;
     errorMessage.value = '';
     
+    // Inicializar el ticket con valores por defecto para evitar errores
+    currentTicket.value = {
+      id: route.params.id,
+      title: 'Cargando...',
+      description: 'Cargando detalles del ticket...',
+      status: 'open',
+      priority: 'medium',
+      category: 'general',
+      createdBy: '',
+      assignedTo: null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      customer: {
+        name: 'Cliente',
+        email: 'cliente@example.com'
+      }
+    };
+    
     // Cargar usuarios inmediatamente
     if (usersStore.users.length === 0) {
       console.log('Inicializando usuarios...');
@@ -881,9 +931,30 @@ const loadTicketData = async () => {
     try {
       // Intentar cargar el ticket primero
       await ticketStore.fetchTicket(route.params.id);
+      
       // Usar el currentTicket del store
-      currentTicket.value = ticketStore.currentTicket;
-      console.log('Ticket obtenido del store:', currentTicket.value);
+      if (ticketStore.currentTicket) {
+        // Asegurar que todos los campos necesarios estén presentes
+        const ticketData = {
+          ...currentTicket.value, // Mantener valores por defecto si faltan en el ticket real
+          ...ticketStore.currentTicket, // Sobrescribir con datos reales
+          // Asegurar que estos campos siempre existan
+          id: ticketStore.currentTicket.id || route.params.id,
+          title: ticketStore.currentTicket.title || 'Sin título',
+          description: ticketStore.currentTicket.description || 'Sin descripción',
+          status: ticketStore.currentTicket.status || 'open',
+          priority: ticketStore.currentTicket.priority || 'medium',
+          category: ticketStore.currentTicket.category || 'general',
+          createdAt: ticketStore.currentTicket.createdAt || new Date().toISOString(),
+          updatedAt: ticketStore.currentTicket.updatedAt || new Date().toISOString(),
+          customer: ticketStore.currentTicket.customer || { name: 'Cliente', email: 'cliente@example.com' }
+        };
+        
+        currentTicket.value = ticketData;
+        console.log('Ticket completo cargado:', currentTicket.value);
+      } else {
+        console.warn('El ticket no se encontró en el store, usando valores por defecto');
+      }
     } catch (err) {
       console.warn('No se pudo cargar el ticket, pero continuaremos con los mensajes:', err);
     }
@@ -1306,9 +1377,13 @@ const updateCategoryTo = async (newCategory) => {
 const getAgentAvatar = (userId) => {
   if (!userId) return null;
   
-  const user = usersStore.users.find(u => u.id === userId);
-  if (user && user.avatarUrl) {
-    return user.avatarUrl;
+  try {
+    const user = usersStore.users.find(u => u.id === userId);
+    if (user && user.avatarUrl) {
+      return user.avatarUrl;
+    }
+  } catch (e) {
+    console.error('Error al obtener avatar:', e);
   }
   
   // Si no tiene avatar, retornar null para que se muestre el icono por defecto
@@ -1317,16 +1392,23 @@ const getAgentAvatar = (userId) => {
 
 // Función para obtener el nombre del remitente del mensaje
 const getMessageSenderName = (message) => {
-  if (!message.userId) {
-    return 'Agente';
+  if (!message) return 'Agente';
+  
+  // Si el mensaje tiene un nombre de usuario definido, usarlo
+  if (message.userName) {
+    return message.userName;
   }
   
-  const user = usersStore.users.find(u => u.id === message.userId);
-  if (user) {
-    return `${user.firstName} ${user.lastName}`;
+  // Si el mensaje tiene un ID de usuario, buscar en el store
+  if (message.userId) {
+    const user = usersStore.users.find(u => u.id === message.userId);
+    if (user) {
+      return `${user.firstName} ${user.lastName}`;
+    }
   }
   
-  return 'Agente';
+  // Si no encontramos información, usar un valor por defecto
+  return 'Agente de soporte';
 };
 </script>
 

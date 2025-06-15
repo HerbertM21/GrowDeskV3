@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/hmdev/GrowDeskV2/GrowDesk/backend/internal/data"
 	"github.com/hmdev/GrowDeskV2/GrowDesk/backend/internal/middleware"
@@ -108,37 +109,87 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	fmt.Printf("📝 REGISTER: Iniciando registro de nuevo usuario\n")
+
 	// Parsear el cuerpo de la solicitud
 	var registerReq models.RegisterRequest
 	if err := json.NewDecoder(r.Body).Decode(&registerReq); err != nil {
+		fmt.Printf("❌ REGISTER ERROR: Error al decodificar cuerpo: %v\n", err)
 		http.Error(w, "El cuerpo de la solicitud es inválido", http.StatusBadRequest)
 		return
 	}
 
+	fmt.Printf("📝 REGISTER DATA: Email=%s, FirstName=%s, LastName=%s\n",
+		registerReq.Email, registerReq.FirstName, registerReq.LastName)
+
 	// Validar campos requeridos
 	if registerReq.Email == "" || registerReq.Password == "" ||
 		registerReq.FirstName == "" || registerReq.LastName == "" {
+		fmt.Printf("❌ REGISTER ERROR: Campos incompletos\n")
 		http.Error(w, "Todos los campos son requeridos", http.StatusBadRequest)
 		return
 	}
 
-	// En una implementación real, almacenaríamos al usuario en la base de datos
-	// Por ahora, devolveremos una respuesta de éxito con un token fijo
+	// Verificar si el usuario ya existe
+	_, err := h.Store.GetUserByEmail(registerReq.Email)
+	if err == nil {
+		fmt.Printf("❌ REGISTER ERROR: El email %s ya está registrado\n", registerReq.Email)
+		http.Error(w, "El correo ya está registrado", http.StatusConflict)
+		return
+	}
 
-	// Generar token
-	token := utils.GenerateMockToken()
+	// Generar ID único para el usuario - USAR MISMO FORMATO QUE LA SECCIÓN DE ADMIN
+	// Cambio: usar formato numérico para el ID como en la sección de administración
+	userID := fmt.Sprintf("%d", time.Now().UnixNano())
+	fmt.Printf("📝 REGISTER: ID generado para nuevo usuario: %s\n", userID)
+
+	// Crear objeto de usuario
+	newUser := models.User{
+		ID:        userID,
+		Email:     registerReq.Email,
+		FirstName: registerReq.FirstName,
+		LastName:  registerReq.LastName,
+		Password:  registerReq.Password,
+		Role:      "employee", // Por defecto, rol de empleado
+		Active:    true,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	fmt.Printf("📝 REGISTER: Intentando guardar nuevo usuario en la base de datos...\n")
+	// Guardar usuario en la base de datos
+	if err := h.Store.CreateUser(newUser); err != nil {
+		fmt.Printf("❌ REGISTER ERROR: Error al crear usuario en BD: %v\n", err)
+		http.Error(w, "Error al crear usuario: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	fmt.Printf("✅ REGISTER SUCCESS: Usuario %s (%s) guardado correctamente\n",
+		userID, registerReq.Email)
+
+	// Para diagnóstico: Verificar inmediatamente si el usuario se puede recuperar
+	savedUser, err := h.Store.GetUserByEmail(registerReq.Email)
+	if err != nil {
+		fmt.Printf("⚠️ REGISTER WARNING: El usuario se guardó pero no se puede recuperar: %v\n", err)
+	} else {
+		fmt.Printf("✅ REGISTER VERIFICATION: Usuario verificado en BD: ID=%s, Email=%s\n",
+			savedUser.ID, savedUser.Email)
+	}
+
+	// Generar token JWT con la información del usuario
+	token, err := utils.GenerateToken(newUser.ID, newUser.Email, newUser.Role)
+	if err != nil {
+		fmt.Printf("⚠️ REGISTER WARNING: Error al generar token JWT: %v\n", err)
+		// Fallback a mock token si hay problemas
+		token = utils.GenerateMockToken()
+	}
 
 	// Preparar respuesta
 	resp := models.AuthResponse{
 		Token: token,
-		User: models.User{
-			ID:        "user-" + utils.GenerateTimestamp(),
-			Email:     registerReq.Email,
-			FirstName: registerReq.FirstName,
-			LastName:  registerReq.LastName,
-			Role:      "customer",
-		},
+		User:  newUser,
 	}
+
+	fmt.Printf("✅ REGISTER COMPLETE: Devolviendo respuesta para usuario %s\n", newUser.ID)
 
 	// Devolver token y información de usuario
 	w.Header().Set("Content-Type", "application/json")
