@@ -293,4 +293,4 @@ VALUES
     (gen_random_uuid()::text, 'Soporte Técnico', 'Problemas técnicos y errores del sistema', '#EF4444', 'tool', true, NOW(), NOW()),
     (gen_random_uuid()::text, 'Facturación', 'Consultas relacionadas con facturación y pagos', '#10B981', 'credit-card', true, NOW(), NOW()),
     (gen_random_uuid()::text, 'Sugerencias', 'Sugerencias y mejoras del producto', '#8B5CF6', 'lightbulb', true, NOW(), NOW())
-ON CONFLICT (id) DO NOTHING; 
+ON CONFLICT (name) DO NOTHING; 

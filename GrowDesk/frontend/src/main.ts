@@ -12,11 +12,8 @@ import { setupPrimeVue } from './plugins/primevue'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 
-// Importar estilos de PrimeVue - Es necesario importarlos explícitamente
-import 'primevue/resources/themes/lara-light-blue/theme.css'  // tema
-import 'primevue/resources/primevue.min.css'                  // core css
-import 'primeicons/primeicons.css'                           // iconos
-import 'primeflex/primeflex.css'                             // utilidades CSS
+// Importar SOLO nuestro tema personalizado - NO importar archivos de PrimeVue
+import './styles/theme.css'
 
 // Importar estilos básicos
 import './assets/main.css'
