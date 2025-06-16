@@ -75,8 +75,11 @@ func (h *TicketHandler) GetTicket(w http.ResponseWriter, r *http.Request) {
 
 // CreateTicket maneja la creación de un nuevo ticket
 func (h *TicketHandler) CreateTicket(w http.ResponseWriter, r *http.Request) {
+	fmt.Printf("🚀 HANDLER CreateTicket INICIADO - URL: %s, Método: %s\n", r.URL.Path, r.Method)
+
 	// Esta función solo maneja solicitudes POST
 	if r.Method != http.MethodPost {
+		fmt.Printf("❌ Error: Método no permitido: %s\n", r.Method)
 		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
 		return
 	}
@@ -86,7 +89,9 @@ func (h *TicketHandler) CreateTicket(w http.ResponseWriter, r *http.Request) {
 
 	// Obtener ID de usuario del contexto
 	userID := r.Context().Value(middleware.UserIDKey).(string)
+	fmt.Printf("🔑 UserID obtenido del contexto: %s\n", userID)
 	if userID == "" {
+		fmt.Printf("❌ Error: UserID vacío\n")
 		http.Error(w, "No autorizado", http.StatusUnauthorized)
 		return
 	}
@@ -94,12 +99,18 @@ func (h *TicketHandler) CreateTicket(w http.ResponseWriter, r *http.Request) {
 	// Decodificar cuerpo de la solicitud
 	var ticketReq models.TicketRequest
 	if err := utils.DecodeJSON(r, &ticketReq); err != nil {
+		fmt.Printf("❌ Error al decodificar JSON: %v\n", err)
 		http.Error(w, "Error al leer datos del ticket", http.StatusBadRequest)
 		return
 	}
 
+	fmt.Printf("📝 Datos del ticket recibidos: Title=%s, Description=%s, CategoryID=%s, Priority=%s\n",
+		ticketReq.Title, ticketReq.Description, ticketReq.CategoryID, ticketReq.Priority)
+
 	// Validar campos requeridos
 	if ticketReq.Title == "" || ticketReq.Description == "" || ticketReq.CategoryID == "" {
+		fmt.Printf("❌ Error: Campos requeridos faltantes - Title=%s, Description=%s, CategoryID=%s\n",
+			ticketReq.Title, ticketReq.Description, ticketReq.CategoryID)
 		http.Error(w, "Título, descripción y categoría son requeridos", http.StatusBadRequest)
 		return
 	}
@@ -114,6 +125,7 @@ func (h *TicketHandler) CreateTicket(w http.ResponseWriter, r *http.Request) {
 		Timestamp: time.Now(),
 		CreatedAt: time.Now(),
 	}
+	fmt.Printf("💬 Mensaje inicial creado: ID=%s, Content=%s\n", initialMessage.ID, initialMessage.Content)
 
 	// Crear nuevo ticket
 	newTicket := models.Ticket{
@@ -129,14 +141,19 @@ func (h *TicketHandler) CreateTicket(w http.ResponseWriter, r *http.Request) {
 		Messages:    []models.Message{initialMessage},
 		Metadata:    ticketReq.Metadata,
 	}
+	fmt.Printf("🎫 Ticket creado: ID=%s, Title=%s\n", newTicket.ID, newTicket.Title)
 
 	// Agregar ticket al almacén
+	fmt.Printf("💾 Intentando guardar ticket en el almacén...\n")
 	if err := h.Store.CreateTicket(newTicket); err != nil {
-		http.Error(w, "Error al crear ticket", http.StatusInternalServerError)
+		fmt.Printf("❌ Error al crear ticket en el almacén: %v\n", err)
+		http.Error(w, fmt.Sprintf("Error al crear ticket: %v", err), http.StatusInternalServerError)
 		return
 	}
+	fmt.Printf("✅ Ticket guardado exitosamente en el almacén\n")
 
 	// Devolver ticket creado
+	fmt.Printf("📤 Enviando respuesta exitosa\n")
 	utils.WriteJSON(w, http.StatusCreated, newTicket)
 }
 

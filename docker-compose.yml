@@ -173,8 +173,8 @@ services:
     environment:
       - PORT=3000
       - DATA_DIR=/app/data
-      - GROWDESK_API_URL=http://growdesk-backend:8080  
-      - GROWDESK_API_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiJhZG1pbi0xMjMiLCJlbWFpbCI6ImFkbWluQGdyb3dkZXNrLmNvbSIsInJvbGUiOiJhZG1pbiIsImV4cCI6MTcyNDA4ODQwMH0.8J5ayPvA4B-1vF5NaqRXycW1pmIl9qjKP6Ddj4Ot_Cw
+      - GROWDESK_API_URL=http://growdesk-backend:8080
+      - GROWDESK_API_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiJ3aWRnZXQtYXBpLXN5c3RlbSIsImVtYWlsIjoid2lkZ2V0QGdyb3dkZXNrLmNvbSIsInJvbGUiOiJhZG1pbiIsImV4cCI6MTc2NzIzNTIwMCwiaWF0IjoxNzM1Njk5MjAwfQ.K8vF2nJ9mP4qR6sT3uV7wX1yZ5aB8cD0eF2gH4iJ6kL
       - WIDGET_BASE_URL=http://growdesk-widget-core:3030  
       - GIN_MODE=debug
       - JWT_SECRET=clave_secreta_desarrollo_local

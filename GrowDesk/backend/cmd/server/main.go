@@ -106,9 +106,6 @@ func main() {
 	// Middleware de autenticación
 	var authMiddleware func(http.Handler) http.Handler
 
-	// FORZAR AUTENTICACIÓN REAL, ignorar la variable de entorno
-	*useMock = false
-
 	if *useMock {
 		authMiddleware = middleware.MockAuth
 		log.Println("Usando autenticación de prueba para desarrollo")
@@ -709,7 +706,7 @@ func ensureWidgetSystemUser(store data.DataStore) {
 		LastName:   "System",
 		Email:      "widget@system.com",
 		Password:   "widget-password",
-		Role:       "system",
+		Role:       "admin",
 		Department: "Soporte",
 		Active:     true,
 		CreatedAt:  time.Now(),

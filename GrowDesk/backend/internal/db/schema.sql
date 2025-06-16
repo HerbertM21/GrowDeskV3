@@ -275,4 +275,22 @@ CREATE INDEX IF NOT EXISTS idx_activities_user_id ON activities(user_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(read);
 CREATE INDEX IF NOT EXISTS idx_widget_messages_ticket_id ON widget_messages(ticket_id);
-CREATE INDEX IF NOT EXISTS idx_widget_messages_api_ticket_id ON widget_messages_api(ticket_id); 
+CREATE INDEX IF NOT EXISTS idx_widget_messages_api_ticket_id ON widget_messages_api(ticket_id);
+
+-- Datos iniciales por defecto
+-- Insertar usuarios por defecto si no existen
+INSERT INTO users (id, first_name, last_name, email, password, role, department, active, created_at, updated_at)
+VALUES 
+    ('admin-123', 'Admin', 'System', 'admin@growdesk.com', 'admin123', 'admin', 'IT', true, NOW(), NOW()),
+    ('agente-growdesk', 'Agente', 'GrowDesk', 'agente@growdesk.com', 'agente123', 'admin', 'Soporte', true, NOW(), NOW()),
+    ('widget-system', 'Widget', 'System', 'widget@system.com', 'widget123', 'admin', 'Sistema', true, NOW(), NOW())
+ON CONFLICT (id) DO NOTHING;
+
+-- Insertar categorías por defecto si no existen
+INSERT INTO categories (id, name, description, color, icon, active, created_at, updated_at)
+VALUES 
+    (gen_random_uuid()::text, 'Consultas Generales', 'Consultas y preguntas generales de los usuarios', '#3B82F6', 'help-circle', true, NOW(), NOW()),
+    (gen_random_uuid()::text, 'Soporte Técnico', 'Problemas técnicos y errores del sistema', '#EF4444', 'tool', true, NOW(), NOW()),
+    (gen_random_uuid()::text, 'Facturación', 'Consultas relacionadas con facturación y pagos', '#10B981', 'credit-card', true, NOW(), NOW()),
+    (gen_random_uuid()::text, 'Sugerencias', 'Sugerencias y mejoras del producto', '#8B5CF6', 'lightbulb', true, NOW(), NOW())
+ON CONFLICT (id) DO NOTHING; 

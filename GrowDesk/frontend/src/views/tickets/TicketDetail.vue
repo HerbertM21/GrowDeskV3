@@ -438,16 +438,16 @@ const translatePriority = (priority) => {
   
   // Normalizar a minúsculas para la comparación
   try {
-    const normalizedPriority = String(priority).toLowerCase();
-    
-    const priorityMap = {
-      'low': 'Baja',
-      'medium': 'Media',
-      'high': 'Alta',
-      'urgent': 'Urgente'
-    };
-    
-    return priorityMap[normalizedPriority] || normalizedPriority;
+  const normalizedPriority = String(priority).toLowerCase();
+  
+  const priorityMap = {
+    'low': 'Baja',
+    'medium': 'Media',
+    'high': 'Alta',
+    'urgent': 'Urgente'
+  };
+  
+  return priorityMap[normalizedPriority] || normalizedPriority;
   } catch (e) {
     console.error('Error al normalizar prioridad:', e);
     return 'Media';
@@ -523,18 +523,18 @@ const normalizePriority = (priority) => {
   // Intentar normalizar la prioridad
   try {
     const p = String(priority).toLowerCase();
-    
+  
     // Mapeo de variantes a valores normalizados
     if (['low', 'baja', 'bajo'].includes(p)) return 'low';
     if (['medium', 'normal', 'media', 'medio'].includes(p)) return 'medium';
     if (['high', 'alta', 'alto'].includes(p)) return 'high';
     if (['urgent', 'urgente', 'crítico', 'critico'].includes(p)) return 'urgent';
-    
+  
     // Si no coincide con ninguna, devolver la original en minúsculas
     return p;
   } catch (e) {
     console.error('Error al normalizar prioridad:', e);
-    return 'medium';
+  return 'medium';
   }
 };
 
@@ -1378,9 +1378,9 @@ const getAgentAvatar = (userId) => {
   if (!userId) return null;
   
   try {
-    const user = usersStore.users.find(u => u.id === userId);
-    if (user && user.avatarUrl) {
-      return user.avatarUrl;
+  const user = usersStore.users.find(u => u.id === userId);
+  if (user && user.avatarUrl) {
+    return user.avatarUrl;
     }
   } catch (e) {
     console.error('Error al obtener avatar:', e);
@@ -1401,9 +1401,9 @@ const getMessageSenderName = (message) => {
   
   // Si el mensaje tiene un ID de usuario, buscar en el store
   if (message.userId) {
-    const user = usersStore.users.find(u => u.id === message.userId);
-    if (user) {
-      return `${user.firstName} ${user.lastName}`;
+  const user = usersStore.users.find(u => u.id === message.userId);
+  if (user) {
+    return `${user.firstName} ${user.lastName}`;
     }
   }
   

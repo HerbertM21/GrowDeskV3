@@ -49,9 +49,9 @@ type MessageResponse struct {
 // GrowDeskTicket es la estructura para enviar tickets al sistema GrowDesk
 type GrowDeskTicket struct {
 	ID          string                 `json:"id"`
-	Title       string                 `json:"title"`
-	Subject     string                 `json:"subject"`
-	Description string                 `json:"description"`
+	Title       string                 `json:"title"`       // Campo requerido por el backend
+	Description string                 `json:"description"` // Campo requerido por el backend
+	CategoryID  string                 `json:"categoryId"`  // Campo requerido por el backend
 	Status      string                 `json:"status"`
 	Priority    string                 `json:"priority"`
 	Email       string                 `json:"email"`
@@ -977,7 +977,102 @@ func getTicketFromGrowDesk(ticketID string) (Ticket, error) {
 	return ticket, nil
 }
 
-// createTicket handles creation of new support tickets
+// getDefaultCategoryID obtiene el ID de la categoría por defecto desde el backend
+func getDefaultCategoryID() string {
+	// Configuración de la API
+	apiURL := getEnv("GROWDESK_API_URL", "http://growdesk-backend:8080")
+	apiKey := getEnv("GROWDESK_API_KEY", "default-api-key")
+
+	// Normalizar URL base
+	baseURL := strings.TrimSuffix(apiURL, "/")
+	url := fmt.Sprintf("%s/api/categories", baseURL)
+
+	// Crear solicitud
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		log.Printf("Error al crear solicitud para obtener categorías: %v", err)
+		return ""
+	}
+
+	// Añadir cabeceras
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+
+	// Crear cliente con timeout
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+	}
+
+	// Enviar solicitud
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Printf("Error al obtener categorías del backend: %v", err)
+		return ""
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		log.Printf("Error al obtener categorías: código de respuesta %d", resp.StatusCode)
+		return ""
+	}
+
+	// Leer respuesta
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Printf("Error al leer respuesta de categorías: %v", err)
+		return ""
+	}
+
+	// Parsear respuesta
+	var categories []map[string]interface{}
+	if err := json.Unmarshal(body, &categories); err != nil {
+		log.Printf("Error al parsear categorías: %v", err)
+		return ""
+	}
+
+	// Buscar la categoría "Consultas Generales" o la primera disponible
+	for _, category := range categories {
+		if name, ok := category["name"].(string); ok {
+			if strings.Contains(strings.ToLower(name), "consultas") || strings.Contains(strings.ToLower(name), "general") {
+				if id, ok := category["id"].(string); ok {
+					log.Printf("Categoría por defecto encontrada: %s (ID: %s)", name, id)
+					return id
+				}
+			}
+		}
+	}
+
+	// Si no se encuentra "Consultas Generales", usar la primera categoría disponible
+	if len(categories) > 0 {
+		if id, ok := categories[0]["id"].(string); ok {
+			if name, ok := categories[0]["name"].(string); ok {
+				log.Printf("Usando primera categoría disponible: %s (ID: %s)", name, id)
+			}
+			return id
+		}
+	}
+
+	log.Printf("No se encontraron categorías disponibles")
+	return ""
+}
+
+// normalizePriority convierte la prioridad a minúsculas para que coincida con las restricciones de la base de datos
+func normalizePriority(priority string) string {
+	switch strings.ToUpper(priority) {
+	case "LOW":
+		return "low"
+	case "MEDIUM":
+		return "medium"
+	case "HIGH":
+		return "high"
+	case "URGENT":
+		return "urgent"
+	default:
+		// Si no coincide con ningún valor conocido, usar medium como predeterminado
+		return "medium"
+	}
+}
+
 func createTicket(c *gin.Context) {
 	log.Printf("===== INICIO CREACIÓN TICKET WIDGET =====")
 
@@ -1178,14 +1273,15 @@ func createTicket(c *gin.Context) {
 
 	log.Printf("ID de ticket generado: %s", ticketID)
 
-	// Crear el ticket
+	// Crear ticket local
 	ticket := Ticket{
 		ID:          ticketID,
-		Title:       ticketData.Subject, // Usamos Subject como Title
+		Title:       ticketData.Subject,
 		Subject:     ticketData.Subject,
-		Status:      "open",
-		Priority:    ticketData.Priority,
 		Description: ticketData.Message,
+		Status:      "open",
+		Priority:    normalizePriority(ticketData.Priority), // Normalizar prioridad también localmente
+		CreatedBy:   userName,
 		CreatedAt:   now,
 		UpdatedAt:   now,
 		UserEmail:   userEmail,
@@ -1194,69 +1290,66 @@ func createTicket(c *gin.Context) {
 		ClientEmail: clientEmail,
 		WidgetID:    ticketData.WidgetID,
 		Department:  ticketData.Department,
-		Messages:    []Message{},
 		Metadata: Metadata{
 			URL:        ticketData.Metadata.URL,
-			Referrer:   ticketData.Metadata.Referrer,
 			UserAgent:  ticketData.Metadata.UserAgent,
+			Referrer:   ticketData.Metadata.Referrer,
 			ScreenSize: ticketData.Metadata.ScreenSize,
+		},
+		Messages: []Message{
+			{
+				ID:        fmt.Sprintf("msg-%d", now.Unix()),
+				Content:   ticketData.Message,
+				IsClient:  true,
+				CreatedAt: now,
+				UserName:  userName,
+				UserEmail: userEmail,
+			},
 		},
 	}
 
-	// Si hay un mensaje inicial, añadirlo al ticket
-	if ticketData.Message != "" {
-		messageID := fmt.Sprintf("MSG-%d", time.Now().UnixNano())
-		message := Message{
-			ID:        messageID,
-			Content:   ticketData.Message,
-			IsClient:  true, // Es un mensaje del cliente
-			CreatedAt: now,
-			UserName:  userName,
-			UserEmail: userEmail,
-		}
-		ticket.Messages = append(ticket.Messages, message)
-	}
-
-	// Guardar el ticket localmente
+	// Guardar ticket localmente
 	if err := SaveTicket(ticket); err != nil {
 		log.Printf("Error al guardar ticket localmente: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al guardar el ticket"})
-		return
 	}
 
-	// Enviar el ticket al sistema GrowDesk en una goroutine separada
+	// Enviar ticket al sistema GrowDesk en segundo plano
 	go func() {
-		// Configuración del API de GrowDesk
-		apiURL := os.Getenv("GROWDESK_API_URL")
-		apiKey := os.Getenv("GROWDESK_API_KEY")
+		apiURL := getEnv("GROWDESK_API_URL", "http://growdesk-backend:8080")
+		apiKey := getEnv("GROWDESK_API_KEY", "default-api-key")
 
-		if apiURL == "" {
-			apiURL = "http://localhost:8080"
-			log.Printf("GROWDESK_API_URL no definido, usando valor por defecto: %s", apiURL)
+		if apiKey == "default-api-key" {
+			log.Printf("GROWDESK_API_KEY no definido, usando valor por defecto")
 		}
 
-		if apiKey == "" {
-			apiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiJhZG1pbi0xMjMiLCJlbWFpbCI6ImFkbWluQGdyb3dkZXNrLmNvbSIsInJvbGUiOiJhZG1pbiIsImV4cCI6MTcyNDA4ODQwMH0.8J5ayPvA4B-1vF5NaqRXycW1pmIl9qjKP6Ddj4Ot_Cw"
-			log.Printf("GROWDESK_API_KEY no definido, usando valor por defecto")
+		// Obtener la categoría por defecto dinámicamente
+		categoryID := getDefaultCategoryID()
+		if categoryID == "" {
+			log.Printf("No se pudo obtener categoría por defecto, usando fallback")
+			categoryID = "default-category" // Fallback en caso de error
 		}
 
 		// Preparar datos para GrowDesk
 		// La estructura debe coincidir con lo que espera el backend de GrowDesk
-		growDeskTicket := GrowDeskTicket{
-			ID:          ticketID,
-			Title:       ticketData.Subject,
-			Subject:     ticketData.Subject,
-			Description: ticketData.Message,
-			Status:      "open",
-			Priority:    ticketData.Priority,
-			Name:        userName,
-			Email:       userEmail,
-			ClientName:  clientName,
-			ClientEmail: clientEmail,
-			Department:  ticketData.Department,
-			Source:      "widget",
-			WidgetID:    ticketData.WidgetID,
-			CreatedAt:   now.Format(time.RFC3339),
+		growDeskTicket := map[string]interface{}{
+			"title":       ticketData.Subject,                     // Campo requerido por el backend
+			"description": ticketData.Message,                     // Campo requerido por el backend
+			"categoryId":  categoryID,                             // ID obtenido dinámicamente
+			"priority":    normalizePriority(ticketData.Priority), // Normalizar prioridad a minúsculas
+			"userName":    userName,
+			"userEmail":   userEmail,
+			"isClient":    true, // Siempre true para tickets del widget
+			"metadata": map[string]interface{}{
+				"url":         ticketData.Metadata.URL,
+				"userAgent":   ticketData.Metadata.UserAgent,
+				"referrer":    ticketData.Metadata.Referrer,
+				"screenSize":  ticketData.Metadata.ScreenSize,
+				"source":      "widget",
+				"widgetId":    ticketData.WidgetID,
+				"clientName":  clientName,
+				"clientEmail": clientEmail,
+				"department":  ticketData.Department,
+			},
 		}
 
 		// Convertir a JSON
@@ -1269,8 +1362,8 @@ func createTicket(c *gin.Context) {
 		// Normalizar URL base
 		baseURL := strings.TrimSuffix(apiURL, "/")
 
-		// Construir URL para la API de tickets
-		url := fmt.Sprintf("%s/widget/tickets", baseURL)
+		// Construir URL para la API de tickets - CAMBIO: usar endpoint correcto del backend
+		url := fmt.Sprintf("%s/api/tickets", baseURL)
 
 		log.Printf("Enviando ticket al sistema GrowDesk en URL: %s", url)
 		log.Printf("Payload JSON: %s", string(jsonData))
@@ -1332,15 +1425,15 @@ func sendHttpRequestWithRetry(url string, jsonData []byte, headers map[string]st
 	// Intentar resolver problemas de DNS antes de comenzar
 	if strings.Contains(url, "localhost") {
 		// Reemplazar localhost con la dirección IP interna de Docker
-		url = strings.Replace(url, "localhost", "growdesk-backend", 1)
+		url = strings.Replace(url, "localhost", "backend", 1)
 		log.Printf("URL ajustada para Docker: %s", url)
 	}
 
 	// Probar diferentes URLs si es necesario
 	alternativeURLs := []string{
 		url,
-		strings.Replace(url, "http://growdesk-backend", "http://backend", 1),
-		strings.Replace(url, "/widget/tickets", "/api/widget/tickets", 1),
+		strings.Replace(url, "http://backend", "http://growdesk-backend", 1),
+		strings.Replace(url, ":8080", ":8081", 1),
 	}
 
 	log.Printf("Intentando enviar solicitud con las siguientes URLs alternativas: %v", alternativeURLs)
@@ -1910,8 +2003,8 @@ func sendMessage(c *gin.Context) {
 		// Normalizar URL base
 		baseURL := strings.TrimSuffix(apiURL, "/")
 
-		// Construir URL para la API de tickets
-		url := fmt.Sprintf("%s/widget/tickets/%s/messages?from_client=true", baseURL, ticketID)
+		// Construir URL para la API de tickets - CAMBIO: usar endpoint correcto del backend
+		url := fmt.Sprintf("%s/api/tickets/%s/messages", baseURL, ticketID)
 
 		log.Printf("Enviando mensaje al sistema GrowDesk en la URL: %s", url)
 
