@@ -32,46 +32,46 @@ interface UsersState {
 // Datos mock para desarrollo
 const mockUsers: User[] = [
   {
-    id: '1',
-    email: 'admin@example.com',
-    firstName: 'Herbert',
-    lastName: 'Usuario',
+    id: 'admin-123',
+    email: 'admin@growdesk.com',
+    firstName: 'Admin',
+    lastName: 'System',
     role: 'admin',
-    department: 'Tecnología',
+    department: 'IT',
     active: true,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    position: 'Gerente de TI',
+    position: 'Administrador del Sistema',
     phone: '+569 1234 5678',
     language: 'es'
   },
   {
-    id: '2',
-    email: 'asistente@example.com',
-    firstName: 'Asistente',
-    lastName: 'Soporte',
-    role: 'assistant',
+    id: 'agente-growdesk',
+    email: 'agente@growdesk.com',
+    firstName: 'Agente',
+    lastName: 'GrowDesk',
+    role: 'admin',
     department: 'Soporte',
     active: true,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    position: 'Coordinador de Soporte',
+    position: 'Agente de Soporte',
     phone: '+34 600 234 567',
     language: 'es'
   },
   {
-    id: '3',
-    email: 'empleado@example.com',
-    firstName: 'Empleado',
-    lastName: 'Regular',
-    role: 'employee',
-    department: 'Ventas',
+    id: 'widget-system',
+    email: 'widget@system.com',
+    firstName: 'Widget',
+    lastName: 'System',
+    role: 'admin',
+    department: 'Sistema',
     active: true,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    position: 'Representante de Ventas',
+    position: 'Sistema Widget',
     phone: '+34 600 345 678',
-    language: 'en'
+    language: 'es'
   }
 ];
 
@@ -370,13 +370,65 @@ export const useUsersStore = defineStore('users', () => {
           }
         }
         
-        // Si no se encuentra, pero tenemos el ID, crear un perfil mock
-        console.log('Creando perfil mock para el usuario actual');
+        // Si no se encuentra, pero tenemos el ID, verificar si es uno de los usuarios del sistema
+        console.log('Verificando si es un usuario del sistema conocido');
+        
+        // Usuarios del sistema conocidos (deben coincidir con schema.sql)
+        const systemUsers = {
+          'admin-123': {
+            id: 'admin-123',
+            firstName: 'Admin',
+            lastName: 'System',
+            email: 'admin@growdesk.com',
+            role: 'admin' as const,
+            department: 'IT',
+            active: true,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          },
+          'agente-growdesk': {
+            id: 'agente-growdesk',
+            firstName: 'Agente',
+            lastName: 'GrowDesk',
+            email: 'agente@growdesk.com',
+            role: 'admin' as const,
+            department: 'Soporte',
+            active: true,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          },
+          'widget-system': {
+            id: 'widget-system',
+            firstName: 'Widget',
+            lastName: 'System',
+            email: 'widget@system.com',
+            role: 'admin' as const,
+            department: 'Sistema',
+            active: true,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          }
+        };
+        
+        if (systemUsers[userId as keyof typeof systemUsers]) {
+          console.log('Creando perfil para usuario del sistema:', userId);
+          const systemUser = systemUsers[userId as keyof typeof systemUsers];
+          
+          // Guardar en memoria y localStorage
+          users.value.push(systemUser);
+          saveUsersToLocalStorage();
+          
+          currentProfile.value = systemUser;
+          return currentProfile.value;
+        }
+        
+        // Solo como último recurso, crear un usuario genérico
+        console.log('Creando perfil genérico para usuario desconocido');
         const mockUser: User = {
           id: userId,
           firstName: 'Usuario',
-          lastName: 'Actual',
-          email: 'current@example.com',
+          lastName: 'Desconocido',
+          email: `${userId}@growdesk.com`,
           role: 'employee',
           department: 'General',
           active: true,
@@ -473,12 +525,62 @@ export const useUsersStore = defineStore('users', () => {
       
       // Si se trata del usuario actual según localStorage
       if (userId === localStorage.getItem('userId')) {
-        console.log('Creando usuario actual mock');
+        console.log('Verificando si es un usuario del sistema conocido');
+        
+        // Usuarios del sistema conocidos (deben coincidir con schema.sql)
+        const systemUsers = {
+          'admin-123': {
+            id: 'admin-123',
+            firstName: 'Admin',
+            lastName: 'System',
+            email: 'admin@growdesk.com',
+            role: 'admin' as const,
+            department: 'IT',
+            active: true,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          },
+          'agente-growdesk': {
+            id: 'agente-growdesk',
+            firstName: 'Agente',
+            lastName: 'GrowDesk',
+            email: 'agente@growdesk.com',
+            role: 'admin' as const,
+            department: 'Soporte',
+            active: true,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          },
+          'widget-system': {
+            id: 'widget-system',
+            firstName: 'Widget',
+            lastName: 'System',
+            email: 'widget@system.com',
+            role: 'admin' as const,
+            department: 'Sistema',
+            active: true,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          }
+        };
+        
+        if (systemUsers[userId as keyof typeof systemUsers]) {
+          console.log('Creando usuario del sistema:', userId);
+          const systemUser = systemUsers[userId as keyof typeof systemUsers];
+          
+          // Guardar en memoria para futuras consultas
+          users.value.push(systemUser);
+          saveUsersToLocalStorage();
+          
+          return systemUser;
+        }
+        
+        console.log('Creando usuario genérico');
         const mockCurrentUser: User = {
           id: userId,
           firstName: 'Usuario',
-          lastName: 'Actual',
-          email: 'current@example.com',
+          lastName: 'Desconocido',
+          email: `${userId}@growdesk.com`,
           role: 'employee',
           department: 'General',
           active: true,

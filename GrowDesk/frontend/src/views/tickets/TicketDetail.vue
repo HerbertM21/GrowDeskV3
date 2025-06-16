@@ -2182,7 +2182,7 @@ const getMessageSenderName = (message) => {
   }
   
   &.priority-btn i {
-    color: #3b82f6;
+    color: var(--primary-color);
   }
   
   &.category-btn i {
@@ -2483,5 +2483,13 @@ const getMessageSenderName = (message) => {
   color: #64748b;
   font-style: italic;
   text-align: center;
+}
+
+.activity-item.info {
+  background-color: rgba(48, 72, 210, 0.1);
+  border-left: 3px solid var(--primary-color);
+  padding: 0.75rem;
+  border-radius: 0.375rem;
+  margin-bottom: 0.5rem;
 }
 </style>

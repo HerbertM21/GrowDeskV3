@@ -1,8 +1,8 @@
 /* Base styles */
 :root {
   /* Colores comunes */
-  --primary-color: #4f46e5;
-  --primary-hover: #4338ca;
+  --primary-color: #3048D2;
+  --primary-hover: #2640B8;
   --secondary-color: #f97316;
   --success-color: #10b981;
   --warning-color: #f59e0b;
@@ -29,51 +29,40 @@
   --font-family-base: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   --font-family-headings: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 
-  /* Variables globales */
+  /* Variables globales adicionales para compatibilidad */
   /* Colores primarios */
-  --primary-color: #3B82F6;
-  --primary-color-rgb: 59, 130, 246;
-  --primary-dark: #1D4ED8;
-  --primary-light: #DBEAFE;
+  --primary-color-rgb: 48, 72, 210;
+  --primary-dark: #2640B8;
+  --primary-light: #E8EBFA;
 
   /* Colores secundarios */
-  --secondary-color: #4F46E5;
-  --secondary-color-rgb: 79, 70, 229;
-  --secondary-dark: #4338CA;
-  --secondary-light: #E0E7FF;
+  --secondary-color-rgb: 249, 115, 22;
+  --secondary-dark: #ea580c;
+  --secondary-light: #fed7aa;
 
   /* Colores de éxito, advertencia y error */
-  --success-color: #10B981;
   --success-color-rgb: 16, 185, 129;
-  --warning-color: #FBBF24;
-  --warning-color-rgb: 251, 191, 36;
-  --error-color: #EF4444;
+  --warning-color-rgb: 245, 158, 11;
+  --error-color: #ef4444;
   --error-color-rgb: 239, 68, 68;
-  --info-color: #60A5FA;
-  --info-color-rgb: 96, 165, 250;
+  --info-color: #3048D2;
+  --info-color-rgb: 48, 72, 210;
 
-  /* Colores de fondo */
-  --bg-primary: #F9FAFB;
-  --light-bg: #F3F4F6;
-  --footer-bg: #F3F4F6;
+  /* Colores de fondo adicionales */
+  --light-bg: #f3f4f6;
 
-  /* Colores de texto */
-  --text-primary: #1F2937;
-  --text-secondary: #4B5563;
-  --text-tertiary: #6B7280;
-  --text-light: #9CA3AF;
+  /* Colores de texto adicionales */
+  --text-tertiary: #6b7280;
+  --text-light: #9ca3af;
 
-  /* Colores de borde */
-  --border-color: #E5E7EB;
-  --border-color-focus: #93C5FD;
+  /* Colores de borde adicionales */
+  --border-color-focus: #c7d2fe;
 
-  /* Radios de borde */
-  --border-radius: 8px;
+  /* Radios de borde adicionales */
   --border-radius-sm: 4px;
   --border-radius-lg: 12px;
 
-  /* Sombras */
-  --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  /* Sombras adicionales */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);

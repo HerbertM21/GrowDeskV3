@@ -100,10 +100,11 @@ const getIconForType = (type: NotificationType): string => {
   }
   
   &.info {
-    border-left: 4px solid #3b82f6;
+    border-left: 4px solid var(--primary-color);
+    background-color: rgba(79, 70, 229, 0.1);
     
-    i {
-      color: #3b82f6;
+    .notification-icon {
+      color: var(--primary-color);
     }
   }
 }

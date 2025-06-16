@@ -142,7 +142,7 @@ const redirectToDashboard = () => {
 // Estado local
 const isEditing = ref(false);
 const currentCategory = ref({
-  id: null,
+  id: null as string | null,
   name: '',
   description: ''
 });
@@ -164,7 +164,7 @@ onMounted(() => {
 });
 
 // Métodos
-const editCategory = (category: { id: number, name: string, description: string }) => {
+const editCategory = (category: { id: string, name: string, description: string }) => {
   console.log('CategoriesManagement: editando categoría:', category)
   currentCategory.value = { ...category };
   isEditing.value = true;
@@ -205,7 +205,7 @@ const saveCategory = async () => {
   }
 };
 
-const deleteCategory = async (id: number) => {
+const deleteCategory = async (id: string) => {
   console.log('CategoriesManagement: confirmando eliminación de categoría:', id)
   if (confirm('¿Está seguro de que desea eliminar esta categoría?')) {
     try {

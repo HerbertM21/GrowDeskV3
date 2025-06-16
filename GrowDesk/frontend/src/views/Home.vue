@@ -295,7 +295,7 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .employee-support {
-  --primary-gradient: linear-gradient(135deg, var(--primary-color) 0%, #3b82f6 100%);
+  --primary-gradient: linear-gradient(135deg, var(--primary-color) 0%, #4338ca 100%);
   --secondary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
   --border-radius-lg: 1.25rem;
   --transition-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);

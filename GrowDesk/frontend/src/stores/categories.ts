@@ -1,10 +1,16 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import apiClient from '@/services/apiClient'
 
 export interface Category {
-  id: number
+  id: string  // Cambio de number a string para coincidir con el backend
   name: string
   description: string
+  color?: string
+  icon?: string
+  active?: boolean
+  createdAt?: string
+  updatedAt?: string
 }
 
 // Nombre clave para localStorage
@@ -17,10 +23,10 @@ export const useCategoriesStore = defineStore('categories', () => {
 
   // Categorías de ejemplo (mock)
   const mockCategories: Category[] = [
-    { id: 1, name: 'Soporte Técnico', description: 'Problemas técnicos y asistencia' },
-    { id: 2, name: 'Ventas', description: 'Consultas sobre productos y servicios' },
-    { id: 3, name: 'Facturación', description: 'Problemas con pagos y facturas' },
-    { id: 4, name: 'General', description: 'Consultas generales' }
+    { id: '1', name: 'Soporte Técnico', description: 'Problemas técnicos y asistencia' },
+    { id: '2', name: 'Ventas', description: 'Consultas sobre productos y servicios' },
+    { id: '3', name: 'Facturación', description: 'Problemas con pagos y facturas' },
+    { id: '4', name: 'General', description: 'Consultas generales' }
   ]
 
   // Guardar categorías en localStorage
@@ -95,60 +101,75 @@ export const useCategoriesStore = defineStore('categories', () => {
     }
   }
 
-  // Cargar categorías
+  // Cargar categorías desde el backend
   async function fetchCategories() {
     loading.value = true
     error.value = ''
     
     try {
-      // Intentar cargar desde localStorage primero
-      const storedCategories = loadCategoriesFromLocalStorage()
-      
-      // Si no hay categorías almacenadas, usar las categorías de ejemplo
-      if (storedCategories.length === 0) {
-        categories.value = [...mockCategories]
-        // Guardar las categorías iniciales en localStorage
-        saveCategoriesToLocalStorage()
-      } else {
-        categories.value = storedCategories
-      }
-    } catch (err) {
+      console.log('Cargando categorías desde el backend...')
+      const response = await apiClient.get('/api/categories')
+      categories.value = response.data
+      console.log('Categorías cargadas desde el backend:', categories.value)
+    } catch (err: any) {
+      console.error('Error al cargar categorías desde el backend:', err)
       error.value = 'Error al cargar las categorías'
-      console.error(err)
+      
+      // Fallback: usar categorías por defecto si falla la conexión
+      categories.value = [
+        { 
+          id: 'default-1', 
+          name: 'Soporte Técnico', 
+          description: 'Problemas técnicos y asistencia',
+          color: '#4CAF50',
+          icon: 'computer',
+          active: true
+        },
+        { 
+          id: 'default-2', 
+          name: 'Consultas Generales', 
+          description: 'Consultas y preguntas generales',
+          color: '#2196F3',
+          icon: 'help',
+          active: true
+        },
+        { 
+          id: 'default-3', 
+          name: 'Facturación', 
+          description: 'Problemas con pagos y facturas',
+          color: '#FFC107',
+          icon: 'credit_card',
+          active: true
+        }
+      ]
     } finally {
       loading.value = false
     }
   }
 
   // Añadir una categoría
-  async function addCategory(category: Omit<Category, 'id'>) {
+  async function addCategory(category: Omit<Category, 'id' | 'createdAt' | 'updatedAt'>) {
     loading.value = true
     error.value = ''
     
     try {
-      // Simulamos la llamada a la API
-      await new Promise(resolve => setTimeout(resolve, 500))
+      console.log('Creando nueva categoría:', category)
+      const response = await apiClient.post('/api/categories', {
+        name: category.name,
+        description: category.description,
+        color: category.color || '#3498db',
+        icon: category.icon || 'category',
+        active: category.active !== false
+      })
       
-      // Generar un ID único (en una aplicación real, el backend lo generaría)
-      const newId = categories.value.length > 0 
-        ? Math.max(...categories.value.map((c: Category) => c.id)) + 1 
-        : 1
-        
-      const newCategory: Category = {
-        id: newId,
-        ...category
-      }
-      
-      // Añadir al array local
+      const newCategory = response.data
       categories.value.push(newCategory)
-      
-      // Guardar en localStorage
-      saveCategoriesToLocalStorage()
+      console.log('Categoría creada exitosamente:', newCategory)
       
       return newCategory
-    } catch (err) {
-      error.value = 'Error al añadir la categoría'
-      console.error(err)
+    } catch (err: any) {
+      console.error('Error al crear categoría:', err)
+      error.value = 'Error al crear la categoría'
       throw err
     } finally {
       loading.value = false
@@ -161,23 +182,26 @@ export const useCategoriesStore = defineStore('categories', () => {
     error.value = ''
     
     try {
-      // Simulamos la llamada a la API
-      await new Promise(resolve => setTimeout(resolve, 500))
+      console.log('Actualizando categoría:', category)
+      const response = await apiClient.put(`/api/categories/${category.id}`, {
+        name: category.name,
+        description: category.description,
+        color: category.color,
+        icon: category.icon,
+        active: category.active
+      })
       
+      const updatedCategory = response.data
       const index = categories.value.findIndex((c: Category) => c.id === category.id)
       if (index !== -1) {
-        categories.value[index] = { ...category }
-        
-        // Guardar en localStorage
-        saveCategoriesToLocalStorage()
-        
-        return category
-      } else {
-        throw new Error('Categoría no encontrada')
+        categories.value[index] = updatedCategory
       }
-    } catch (err) {
+      console.log('Categoría actualizada exitosamente:', updatedCategory)
+      
+      return updatedCategory
+    } catch (err: any) {
+      console.error('Error al actualizar categoría:', err)
       error.value = 'Error al actualizar la categoría'
-      console.error(err)
       throw err
     } finally {
       loading.value = false
@@ -185,22 +209,20 @@ export const useCategoriesStore = defineStore('categories', () => {
   }
 
   // Eliminar una categoría
-  async function deleteCategory(id: number) {
+  async function deleteCategory(id: string) {  // Cambio de number a string
     loading.value = true
     error.value = ''
     
     try {
-      // Simulamos la llamada a la API
-      await new Promise(resolve => setTimeout(resolve, 500))
+      console.log('Eliminando categoría con ID:', id)
+      await apiClient.delete(`/api/categories/${id}`)
       
       // Filtrar categorías y actualizar el estado
       categories.value = categories.value.filter((c: Category) => c.id !== id)
-      
-      // Guardar en localStorage
-      saveCategoriesToLocalStorage()
-    } catch (err) {
+      console.log('Categoría eliminada exitosamente')
+    } catch (err: any) {
+      console.error('Error al eliminar categoría:', err)
       error.value = 'Error al eliminar la categoría'
-      console.error(err)
       throw err
     } finally {
       loading.value = false

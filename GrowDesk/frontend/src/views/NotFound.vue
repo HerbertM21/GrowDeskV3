@@ -71,7 +71,7 @@ export default defineComponent({
   &.circle-1 {
     width: 400px;
     height: 400px;
-    background: linear-gradient(45deg, var(--primary-color), #3b82f6);
+    background: linear-gradient(45deg, var(--primary-color), #4338ca);
     top: -100px;
     left: -100px;
     animation: float 15s infinite ease-in-out;
